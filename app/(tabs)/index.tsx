@@ -1,4 +1,5 @@
-import { StyleSheet, View, TouchableOpacity, Text, Alert } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, TouchableOpacity, Text, Alert, FlatList } from 'react-native';
 import MapComponent from '@/components/MapView';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -7,11 +8,13 @@ import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useApp } from '@/contexts/AppContext';
-import { PetInfo } from '@/lib/database';
+import { PetInfo, RecommendationEngine } from '@/lib/database';
+import { RecommendationEngine as RecEngine } from '@/lib/recommendation';
 
 export default function HomeScreen() {
   const { location, loading: locationLoading, error: locationError } = useLocation();
   const { user } = useApp();
+  const [showRecommendations, setShowRecommendations] = useState(false);
 
   const handleMarkerPress = (petInfo: PetInfo) => {
     Alert.alert(
@@ -33,6 +36,10 @@ export default function HomeScreen() {
         { text: '取消', style: 'cancel' }
       ]
     );
+  };
+
+  const handleShowRecommendations = () => {
+    setShowRecommendations(!showRecommendations);
   };
 
   if (locationError) {
@@ -59,7 +66,32 @@ export default function HomeScreen() {
             <Ionicons name="add" size={24} color="white" />
           </TouchableOpacity>
         </Link>
+        <TouchableOpacity
+          style={[styles.recommendationButton, showRecommendations && styles.recommendationButtonActive]}
+          onPress={handleShowRecommendations}
+        >
+          <Ionicons name="bulb" size={24} color={showRecommendations ? 'white' : Colors.light.tint} />
+        </TouchableOpacity>
       </View>
+
+      {/* 智能推荐面板 */}
+      {showRecommendations && location && (
+        <View style={styles.recommendationPanel}>
+          <View style={styles.recommendationHeader}>
+            <Ionicons name="star" size={20} color={Colors.light.tint} />
+            <ThemedText style={styles.recommendationTitle}>智能推荐</ThemedText>
+            <TouchableOpacity onPress={() => setShowRecommendations(false)}>
+              <Ionicons name="close" size={24} color={Colors.light.icon} />
+            </TouchableOpacity>
+          </View>
+          <ThemedText style={styles.recommendationHint}>
+            基于您的位置和行为偏好，为您推荐附近的宠物信息
+          </ThemedText>
+          <TouchableOpacity style={styles.recommendationAction}>
+            <Text style={styles.recommendationActionText}>查看推荐</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ThemedView>
   );
 }
@@ -98,6 +130,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
+    flexDirection: 'column',
+    gap: 12,
   },
   fab: {
     width: 56,
@@ -114,5 +148,69 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+  },
+  recommendationButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    borderWidth: 2,
+    borderColor: Colors.light.tint,
+  },
+  recommendationButtonActive: {
+    backgroundColor: Colors.light.tint,
+    borderColor: Colors.light.tint,
+  },
+  recommendationPanel: {
+    position: 'absolute',
+    top: 80,
+    left: 20,
+    right: 20,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4.65,
+  },
+  recommendationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  recommendationTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  recommendationHint: {
+    fontSize: 13,
+    opacity: 0.7,
+    marginBottom: 12,
+    lineHeight: 18,
+  },
+  recommendationAction: {
+    backgroundColor: Colors.light.tint,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  recommendationActionText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

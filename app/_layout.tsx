@@ -46,6 +46,11 @@ function RootLayoutContent() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         <Stack.Screen name="chat" options={{ headerShown: false }} />
+        <Stack.Screen name="publish" options={{ headerShown: false }} />
+        <Stack.Screen name="stories" options={{ headerShown: false }} />
+        <Stack.Screen name="success-cases" options={{ headerShown: false }} />
+        <Stack.Screen name="crowdfunding" options={{ headerShown: false }} />
+        <Stack.Screen name="statistics" options={{ headerShown: false }} />
       </Stack>
     </MessageProvider>
   );

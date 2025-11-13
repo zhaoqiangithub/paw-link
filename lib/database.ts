@@ -51,6 +51,99 @@ export interface Report {
   status: 'pending' | 'resolved' | 'rejected';
 }
 
+// 二期功能 - 新增接口
+export interface UserBehaviorLog {
+  id: string;
+  userId: string;
+  action: 'view' | 'click' | 'message' | 'favorite' | 'share';
+  targetType: 'pet_info' | 'story' | 'case';
+  targetId: string;
+  createdAt: number;
+}
+
+export interface Payment {
+  id: string;
+  userId: string;
+  petInfoId?: string;
+  campaignId?: string;
+  amount: number;
+  type: 'donation' | 'crowdfunding' | 'medical';
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  paymentMethod?: string;
+  transactionId?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface CrowdfundingCampaign {
+  id: string;
+  petInfoId: string;
+  userId: string;
+  title: string;
+  description: string;
+  targetAmount: number;
+  currentAmount: number;
+  status: 'active' | 'completed' | 'cancelled';
+  deadline: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface Donation {
+  id: string;
+  campaignId: string;
+  userId: string;
+  amount: number;
+  message?: string;
+  anonymous: number;
+  createdAt: number;
+}
+
+export interface Story {
+  id: string;
+  userId: string;
+  title: string;
+  content: string;
+  images: string[];
+  petInfoId?: string;
+  likesCount: number;
+  commentsCount: number;
+  createdAt: number;
+  updatedAt: number;
+  isActive: number;
+}
+
+export interface StoryLike {
+  id: string;
+  storyId: string;
+  userId: string;
+  createdAt: number;
+}
+
+export interface StoryComment {
+  id: string;
+  storyId: string;
+  userId: string;
+  content: string;
+  createdAt: number;
+}
+
+export interface SuccessCase {
+  id: string;
+  userId: string;
+  petInfoId: string;
+  title: string;
+  description: string;
+  images: string[];
+  rescueDate: number;
+  adoptionDate?: number;
+  story?: string;
+  likesCount: number;
+  createdAt: number;
+  updatedAt: number;
+  isActive: number;
+}
+
 let db: SQLite.WebSQLDatabase | null = null;
 let initializing = false;
 
@@ -145,6 +238,116 @@ const createTables = async () => {
         description TEXT,
         createdAt INTEGER NOT NULL,
         status TEXT NOT NULL DEFAULT 'pending'
+      );
+    `);
+
+    // 二期功能 - 新增表
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS user_behavior_logs (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        action TEXT NOT NULL,
+        targetType TEXT NOT NULL,
+        targetId TEXT NOT NULL,
+        createdAt INTEGER NOT NULL
+      );
+    `);
+
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS payments (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        petInfoId TEXT,
+        campaignId TEXT,
+        amount REAL NOT NULL,
+        type TEXT NOT NULL,
+        status TEXT NOT NULL,
+        paymentMethod TEXT,
+        transactionId TEXT,
+        createdAt INTEGER NOT NULL,
+        updatedAt INTEGER NOT NULL
+      );
+    `);
+
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS crowdfunding_campaigns (
+        id TEXT PRIMARY KEY,
+        petInfoId TEXT NOT NULL,
+        userId TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        targetAmount REAL NOT NULL,
+        currentAmount REAL NOT NULL DEFAULT 0,
+        status TEXT NOT NULL,
+        deadline INTEGER NOT NULL,
+        createdAt INTEGER NOT NULL,
+        updatedAt INTEGER NOT NULL
+      );
+    `);
+
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS donations (
+        id TEXT PRIMARY KEY,
+        campaignId TEXT NOT NULL,
+        userId TEXT NOT NULL,
+        amount REAL NOT NULL,
+        message TEXT,
+        anonymous INTEGER NOT NULL DEFAULT 0,
+        createdAt INTEGER NOT NULL
+      );
+    `);
+
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS stories (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        images TEXT NOT NULL,
+        petInfoId TEXT,
+        likesCount INTEGER NOT NULL DEFAULT 0,
+        commentsCount INTEGER NOT NULL DEFAULT 0,
+        createdAt INTEGER NOT NULL,
+        updatedAt INTEGER NOT NULL,
+        isActive INTEGER NOT NULL DEFAULT 1
+      );
+    `);
+
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS story_likes (
+        id TEXT PRIMARY KEY,
+        storyId TEXT NOT NULL,
+        userId TEXT NOT NULL,
+        createdAt INTEGER NOT NULL,
+        UNIQUE(storyId, userId)
+      );
+    `);
+
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS story_comments (
+        id TEXT PRIMARY KEY,
+        storyId TEXT NOT NULL,
+        userId TEXT NOT NULL,
+        content TEXT NOT NULL,
+        createdAt INTEGER NOT NULL
+      );
+    `);
+
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS success_cases (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        petInfoId TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        images TEXT NOT NULL,
+        rescueDate INTEGER NOT NULL,
+        adoptionDate INTEGER,
+        story TEXT,
+        likesCount INTEGER NOT NULL DEFAULT 0,
+        createdAt INTEGER NOT NULL,
+        updatedAt INTEGER NOT NULL,
+        isActive INTEGER NOT NULL DEFAULT 1
       );
     `);
 
@@ -549,10 +752,546 @@ export const ReportDB = {
   }
 };
 
+// 二期功能 - 用户行为日志操作
+export const UserBehaviorDB = {
+  log: async (behaviorData: Omit<UserBehaviorLog, 'id' | 'createdAt'>): Promise<UserBehaviorLog> => {
+    const dbInstance = await initDb();
+    const id = `behavior_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = Date.now();
+    const behavior: UserBehaviorLog = {
+      id,
+      ...behaviorData,
+      createdAt: now
+    };
+
+    const stmt = await dbInstance.prepareAsync(
+      'INSERT INTO user_behavior_logs (id, userId, action, targetType, targetId, createdAt) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+
+    try {
+      await stmt.executeAsync([
+        behavior.id, behavior.userId, behavior.action,
+        behavior.targetType, behavior.targetId, behavior.createdAt
+      ]);
+      console.log('User behavior logged successfully');
+      return behavior;
+    } finally {
+      await stmt.finalizeAsync();
+    }
+  },
+
+  getUserBehaviors: async (userId: string, days: number = 30): Promise<UserBehaviorLog[]> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM user_behavior_logs WHERE userId = ? AND createdAt >= ? ORDER BY createdAt DESC'
+      );
+      try {
+        const result = await stmt.executeAsync([userId, Date.now() - days * 24 * 60 * 60 * 1000]);
+        return await result.getAllAsync() as UserBehaviorLog[];
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error getting user behaviors:', error);
+      return [];
+    }
+  }
+};
+
+// 二期功能 - 支付记录操作
+export const PaymentDB = {
+  create: async (paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>): Promise<Payment> => {
+    const dbInstance = await initDb();
+    const id = `payment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = Date.now();
+    const payment: Payment = {
+      id,
+      ...paymentData,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const stmt = await dbInstance.prepareAsync(
+      'INSERT INTO payments (id, userId, petInfoId, campaignId, amount, type, status, paymentMethod, transactionId, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    );
+
+    try {
+      await stmt.executeAsync([
+        payment.id, payment.userId, payment.petInfoId, payment.campaignId,
+        payment.amount, payment.type, payment.status, payment.paymentMethod,
+        payment.transactionId, payment.createdAt, payment.updatedAt
+      ]);
+      console.log('Payment created successfully');
+      return payment;
+    } finally {
+      await stmt.finalizeAsync();
+    }
+  },
+
+  updateStatus: async (paymentId: string, status: Payment['status'], transactionId?: string): Promise<void> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'UPDATE payments SET status = ?, transactionId = ?, updatedAt = ? WHERE id = ?'
+      );
+      try {
+        await stmt.executeAsync([status, transactionId, Date.now(), paymentId]);
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+    }
+  },
+
+  getUserPayments: async (userId: string): Promise<Payment[]> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM payments WHERE userId = ? ORDER BY createdAt DESC'
+      );
+      try {
+        const result = await stmt.executeAsync([userId]);
+        return await result.getAllAsync() as Payment[];
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error getting user payments:', error);
+      return [];
+    }
+  }
+};
+
+// 二期功能 - 众筹活动操作
+export const CrowdfundingDB = {
+  create: async (campaignData: Omit<CrowdfundingCampaign, 'id' | 'createdAt' | 'updatedAt' | 'currentAmount'>): Promise<CrowdfundingCampaign> => {
+    const dbInstance = await initDb();
+    const id = `campaign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = Date.now();
+    const campaign: CrowdfundingCampaign = {
+      id,
+      ...campaignData,
+      currentAmount: 0,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const stmt = await dbInstance.prepareAsync(
+      'INSERT INTO crowdfunding_campaigns (id, petInfoId, userId, title, description, targetAmount, currentAmount, status, deadline, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    );
+
+    try {
+      await stmt.executeAsync([
+        campaign.id, campaign.petInfoId, campaign.userId, campaign.title,
+        campaign.description, campaign.targetAmount, campaign.currentAmount,
+        campaign.status, campaign.deadline, campaign.createdAt, campaign.updatedAt
+      ]);
+      console.log('Crowdfunding campaign created successfully');
+      return campaign;
+    } finally {
+      await stmt.finalizeAsync();
+    }
+  },
+
+  getList: async (status?: string): Promise<CrowdfundingCampaign[]> => {
+    try {
+      const dbInstance = await initDb();
+      let query = 'SELECT * FROM crowdfunding_campaigns WHERE 1=1';
+      const params: any[] = [];
+
+      if (status) {
+        query += ' AND status = ?';
+        params.push(status);
+      }
+
+      query += ' ORDER BY createdAt DESC';
+
+      const stmt = await dbInstance.prepareAsync(query);
+      try {
+        const result = await stmt.executeAsync(params);
+        return await result.getAllAsync() as CrowdfundingCampaign[];
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error getting crowdfunding campaigns:', error);
+      return [];
+    }
+  },
+
+  updateAmount: async (campaignId: string, amount: number): Promise<void> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'UPDATE crowdfunding_campaigns SET currentAmount = currentAmount + ?, updatedAt = ? WHERE id = ?'
+      );
+      try {
+        await stmt.executeAsync([amount, Date.now(), campaignId]);
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error updating campaign amount:', error);
+    }
+  }
+};
+
+// 二期功能 - 捐赠记录操作
+export const DonationDB = {
+  create: async (donationData: Omit<Donation, 'id' | 'createdAt'>): Promise<Donation> => {
+    const dbInstance = await initDb();
+    const id = `donation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = Date.now();
+    const donation: Donation = {
+      id,
+      ...donationData,
+      createdAt: now
+    };
+
+    const stmt = await dbInstance.prepareAsync(
+      'INSERT INTO donations (id, campaignId, userId, amount, message, anonymous, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    );
+
+    try {
+      await stmt.executeAsync([
+        donation.id, donation.campaignId, donation.userId,
+        donation.amount, donation.message, donation.anonymous, donation.createdAt
+      ]);
+      console.log('Donation created successfully');
+
+      // 更新众筹金额
+      await CrowdfundingDB.updateAmount(donation.campaignId, donation.amount);
+
+      return donation;
+    } finally {
+      await stmt.finalizeAsync();
+    }
+  },
+
+  getByCampaignId: async (campaignId: string): Promise<Donation[]> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM donations WHERE campaignId = ? ORDER BY createdAt DESC'
+      );
+      try {
+        const result = await stmt.executeAsync([campaignId]);
+        return await result.getAllAsync() as Donation[];
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error getting donations:', error);
+      return [];
+    }
+  }
+};
+
+// 二期功能 - 救助故事操作
+export const StoryDB = {
+  create: async (storyData: Omit<Story, 'id' | 'createdAt' | 'updatedAt' | 'likesCount' | 'commentsCount'>): Promise<Story> => {
+    const dbInstance = await initDb();
+    const id = `story_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = Date.now();
+    const story: Story = {
+      id,
+      ...storyData,
+      likesCount: 0,
+      commentsCount: 0,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const stmt = await dbInstance.prepareAsync(
+      'INSERT INTO stories (id, userId, title, content, images, petInfoId, likesCount, commentsCount, createdAt, updatedAt, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    );
+
+    try {
+      await stmt.executeAsync([
+        story.id, story.userId, story.title, story.content,
+        JSON.stringify(story.images), story.petInfoId, story.likesCount,
+        story.commentsCount, story.createdAt, story.updatedAt, story.isActive
+      ]);
+      console.log('Story created successfully');
+      return story;
+    } finally {
+      await stmt.finalizeAsync();
+    }
+  },
+
+  getList: async (limit: number = 50, offset: number = 0): Promise<Story[]> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM stories WHERE isActive = 1 ORDER BY createdAt DESC LIMIT ? OFFSET ?'
+      );
+      try {
+        const result = await stmt.executeAsync([limit, offset]);
+        const rows = await result.getAllAsync();
+
+        const results: Story[] = [];
+        for (const row of rows) {
+          results.push({
+            ...row,
+            images: JSON.parse(row.images || '[]')
+          } as Story);
+        }
+        return results;
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error getting stories:', error);
+      return [];
+    }
+  },
+
+  updateLikeCount: async (storyId: string, increment: number = 1): Promise<void> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'UPDATE stories SET likesCount = likesCount + ?, updatedAt = ? WHERE id = ?'
+      );
+      try {
+        await stmt.executeAsync([increment, Date.now(), storyId]);
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error updating story like count:', error);
+    }
+  },
+
+  updateCommentCount: async (storyId: string, increment: number = 1): Promise<void> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'UPDATE stories SET commentsCount = commentsCount + ?, updatedAt = ? WHERE id = ?'
+      );
+      try {
+        await stmt.executeAsync([increment, Date.now(), storyId]);
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error updating story comment count:', error);
+    }
+  }
+};
+
+// 二期功能 - 故事点赞操作
+export const StoryLikeDB = {
+  toggle: async (storyId: string, userId: string): Promise<{ liked: boolean; action: 'like' | 'unlike' }> => {
+    try {
+      const dbInstance = await initDb();
+
+      // 检查是否已点赞
+      const checkStmt = await dbInstance.prepareAsync(
+        'SELECT * FROM story_likes WHERE storyId = ? AND userId = ?'
+      );
+      try {
+        const checkResult = await checkStmt.executeAsync([storyId, userId]);
+        const existing = await checkResult.getAllAsync();
+
+        if (existing.length > 0) {
+          // 取消点赞
+          const deleteStmt = await dbInstance.prepareAsync(
+            'DELETE FROM story_likes WHERE storyId = ? AND userId = ?'
+          );
+          try {
+            await deleteStmt.executeAsync([storyId, userId]);
+          } finally {
+            await deleteStmt.finalizeAsync();
+          }
+
+          await StoryDB.updateLikeCount(storyId, -1);
+          return { liked: false, action: 'unlike' };
+        } else {
+          // 点赞
+          const id = `like_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const now = Date.now();
+
+          const insertStmt = await dbInstance.prepareAsync(
+            'INSERT INTO story_likes (id, storyId, userId, createdAt) VALUES (?, ?, ?, ?)'
+          );
+          try {
+            await insertStmt.executeAsync([id, storyId, userId, now]);
+          } finally {
+            await insertStmt.finalizeAsync();
+          }
+
+          await StoryDB.updateLikeCount(storyId, 1);
+          return { liked: true, action: 'like' };
+        }
+      } finally {
+        await checkStmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error toggling story like:', error);
+      return { liked: false, action: 'unlike' };
+    }
+  },
+
+  isLiked: async (storyId: string, userId: string): Promise<boolean> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM story_likes WHERE storyId = ? AND userId = ?'
+      );
+      try {
+        const result = await stmt.executeAsync([storyId, userId]);
+        const rows = await result.getAllAsync();
+        return rows.length > 0;
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error checking if story is liked:', error);
+      return false;
+    }
+  }
+};
+
+// 二期功能 - 故事评论操作
+export const StoryCommentDB = {
+  create: async (commentData: Omit<StoryComment, 'id' | 'createdAt'>): Promise<StoryComment> => {
+    const dbInstance = await initDb();
+    const id = `comment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = Date.now();
+    const comment: StoryComment = {
+      id,
+      ...commentData,
+      createdAt: now
+    };
+
+    const stmt = await dbInstance.prepareAsync(
+      'INSERT INTO story_comments (id, storyId, userId, content, createdAt) VALUES (?, ?, ?, ?, ?)'
+    );
+
+    try {
+      await stmt.executeAsync([
+        comment.id, comment.storyId, comment.userId, comment.content, comment.createdAt
+      ]);
+      console.log('Story comment created successfully');
+
+      // 更新评论数
+      await StoryDB.updateCommentCount(comment.storyId, 1);
+
+      return comment;
+    } finally {
+      await stmt.finalizeAsync();
+    }
+  },
+
+  getByStoryId: async (storyId: string): Promise<StoryComment[]> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM story_comments WHERE storyId = ? ORDER BY createdAt ASC'
+      );
+      try {
+        const result = await stmt.executeAsync([storyId]);
+        return await result.getAllAsync() as StoryComment[];
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error getting story comments:', error);
+      return [];
+    }
+  }
+};
+
+// 二期功能 - 成功案例操作
+export const SuccessCaseDB = {
+  create: async (caseData: Omit<SuccessCase, 'id' | 'createdAt' | 'updatedAt' | 'likesCount'>): Promise<SuccessCase> => {
+    const dbInstance = await initDb();
+    const id = `case_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = Date.now();
+    const successCase: SuccessCase = {
+      id,
+      ...caseData,
+      likesCount: 0,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const stmt = await dbInstance.prepareAsync(
+      'INSERT INTO success_cases (id, userId, petInfoId, title, description, images, rescueDate, adoptionDate, story, likesCount, createdAt, updatedAt, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    );
+
+    try {
+      await stmt.executeAsync([
+        successCase.id, successCase.userId, successCase.petInfoId,
+        successCase.title, successCase.description, JSON.stringify(successCase.images),
+        successCase.rescueDate, successCase.adoptionDate, successCase.story,
+        successCase.likesCount, successCase.createdAt, successCase.updatedAt, successCase.isActive
+      ]);
+      console.log('Success case created successfully');
+      return successCase;
+    } finally {
+      await stmt.finalizeAsync();
+    }
+  },
+
+  getList: async (limit: number = 50, offset: number = 0): Promise<SuccessCase[]> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM success_cases WHERE isActive = 1 ORDER BY createdAt DESC LIMIT ? OFFSET ?'
+      );
+      try {
+        const result = await stmt.executeAsync([limit, offset]);
+        const rows = await result.getAllAsync();
+
+        const results: SuccessCase[] = [];
+        for (const row of rows) {
+          results.push({
+            ...row,
+            images: JSON.parse(row.images || '[]')
+          } as SuccessCase);
+        }
+        return results;
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error getting success cases:', error);
+      return [];
+    }
+  },
+
+  updateLikeCount: async (caseId: string, increment: number = 1): Promise<void> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'UPDATE success_cases SET likesCount = likesCount + ?, updatedAt = ? WHERE id = ?'
+      );
+      try {
+        await stmt.executeAsync([increment, Date.now(), caseId]);
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error updating success case like count:', error);
+    }
+  }
+};
+
 export default {
   initDatabase,
   UserDB,
   PetInfoDB,
   MessageDB,
-  ReportDB
+  ReportDB,
+  UserBehaviorDB,
+  PaymentDB,
+  CrowdfundingDB,
+  DonationDB,
+  StoryDB,
+  StoryLikeDB,
+  StoryCommentDB,
+  SuccessCaseDB
 };
