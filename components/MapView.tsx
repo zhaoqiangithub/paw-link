@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Dimensions, View, Text, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Dimensions, View, Text, Alert, TouchableOpacity } from 'react-native';
 import { useLocation } from '@/hooks/use-location';
 import { PetInfo, PetInfoDB } from '@/lib/database';
 import { Colors } from '@/constants/theme';
 import { useApp } from '@/contexts/AppContext';
-import { Ionicons } from '@expo/vector-icons';
+import { AmapWebView } from './AmapWebView';
+import { TestWebView } from './TestWebView';
+import type { AmapWebViewProps } from './AmapWebView';
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,6 +19,8 @@ export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress }) => {
   const { location } = useLocation();
   const [petInfos, setPetInfos] = useState<PetInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [debugMode, setDebugMode] = useState(false); // 调试模式开关
 
   const loadPetInfos = async () => {
     if (!location || !user) return;
@@ -44,103 +48,92 @@ export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress }) => {
     }
   }, [location, user]);
 
-  const getMarkerColor = (type: string, status: string) => {
-    if (status === 'emergency') return '#FF4444';
-    if (status === 'needs_rescue') return '#FF9800';
-    if (status === 'for_adoption') return '#4CAF50';
-    if (status === 'adopted') return '#9E9E9E';
-    return '#2196F3';
+  // 处理标记点击
+  const handleMarkerClick = (pet: any) => {
+    if (onMarkerPress) {
+      // 找到对应的 PetInfo 对象
+      const petInfo = petInfos.find(p => p.id === pet.id);
+      if (petInfo) {
+        onMarkerPress(petInfo);
+      }
+    }
   };
 
-  const getMarkerIcon = (type: string, status: string) => {
-    if (status === 'emergency') return '🚨';
-    if (status === 'needs_rescue') return '🆘';
-    if (status === 'for_adoption') return type === 'cat' ? '🐱' : type === 'dog' ? '🐶' : '🐾';
-    return '📍';
+  // 处理定位成功
+  const handleLocationSuccess = (loc: { longitude: number; latitude: number }) => {
+    console.log('定位成功:', loc);
   };
 
-  const handleMarkerPress = (petInfo: PetInfo) => {
-    onMarkerPress?.(petInfo);
+  // 处理定位错误
+  const handleLocationError = (error: { message: string }) => {
+    console.error('定位失败:', error.message);
+    Alert.alert('定位失败', '无法获取您的位置信息，请检查定位权限设置。');
   };
 
-  // 计算屏幕上标记位置（简化版，实际项目中应使用真实地图坐标转换）
-  const calculateScreenPosition = (petInfo: PetInfo) => {
-    if (!location) return { x: width / 2, y: height / 2 };
-
-    const latDelta = 0.0922;
-    const lonDelta = 0.0421;
-
-    const x = ((petInfo.longitude - location.longitude) / lonDelta) * width + width / 2;
-    const y = height / 2 - ((petInfo.latitude - location.latitude) / latDelta) * height;
-
-    return { x: Math.max(30, Math.min(width - 30, x)), y: Math.max(100, Math.min(height - 100, y)) };
+  // 地图加载完成
+  const handleMapLoaded = () => {
+    console.log('地图加载完成');
+    setMapLoaded(true);
   };
 
+  // 如果位置未获取，显示加载状态
   if (!location) {
     return (
       <View style={styles.loadingContainer}>
-        <Ionicons name="location-outline" size={64} color={Colors.light.icon} />
         <Text style={styles.loadingText}>正在获取位置信息...</Text>
       </View>
     );
   }
 
+  // 转换宠物数据为 AmapWebView 所需的格式
+  const petsForMap = petInfos.map(pet => ({
+    id: pet.id,
+    title: pet.title,
+    longitude: pet.longitude,
+    latitude: pet.latitude,
+    status: pet.status as 'emergency' | 'needs_rescue' | 'for_adoption' | 'adopted',
+    description: pet.description,
+  }));
+
   return (
     <View style={styles.container}>
-      {/* 简化版地图背景 */}
-      <View style={styles.mapBackground}>
-        <View style={[styles.userLocation, {
-          left: width / 2 - 10,
-          top: height / 2 - 10
-        }]} />
-        <Text style={styles.mapTitle}>PawLink 宠物地图</Text>
-        <Text style={styles.mapSubtitle}>当前位置：{location.address || '未知位置'}</Text>
-      </View>
+      {/* 调试模式切换按钮 */}
+      <TouchableOpacity
+        style={styles.debugButton}
+        onPress={() => setDebugMode(!debugMode)}
+      >
+        <Text style={styles.debugButtonText}>
+          {debugMode ? '🔙 返回地图' : '🐛 调试模式'}
+        </Text>
+      </TouchableOpacity>
 
-      {/* 标记点 */}
-      {!loading && petInfos.map((petInfo) => {
-        const position = calculateScreenPosition(petInfo);
-        return (
-          <TouchableOpacity
-            key={petInfo.id}
-            style={[
-              styles.marker,
-              {
-                left: position.x - 20,
-                top: position.y - 20,
-                backgroundColor: getMarkerColor(petInfo.type, petInfo.status)
-              }
-            ]}
-            onPress={() => handleMarkerPress(petInfo)}
-          >
-            <Text style={styles.markerIcon}>
-              {getMarkerIcon(petInfo.type, petInfo.status)}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-
-      {/* 图例 */}
-      <View style={styles.legend}>
-        <Text style={styles.legendTitle}>图例</Text>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#FF9800' }]} />
-          <Text style={styles.legendText}>需救助</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#4CAF50' }]} />
-          <Text style={styles.legendText}>待领养</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#FF4444' }]} />
-          <Text style={styles.legendText}>紧急</Text>
-        </View>
-      </View>
-
-      {loading && (
-        <View style={styles.loadingOverlay}>
-          <Text style={styles.loadingText}>加载中...</Text>
-        </View>
+      {/* 根据调试模式显示不同内容 */}
+      {debugMode ? (
+        <TestWebView
+          onMessage={(data) => {
+            console.log('调试模式收到消息:', data);
+            if (data.type === 'TEST_MESSAGE') {
+              Alert.alert(
+                '🎉 WebView 测试成功！',
+                `WebView 正常工作！\n\n消息内容:\n${JSON.stringify(data.data, null, 2)}`
+              );
+            }
+          }}
+        />
+      ) : (
+        <AmapWebView
+          center={{
+            longitude: location.longitude,
+            latitude: location.latitude,
+          }}
+          zoom={15}
+          pets={petsForMap}
+          onMapLoaded={handleMapLoaded}
+          onMarkerClick={handleMarkerClick}
+          onLocationSuccess={handleLocationSuccess}
+          onLocationError={handleLocationError}
+          style={styles.map}
+        />
       )}
     </View>
   );
@@ -150,80 +143,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  mapBackground: {
+  map: {
     flex: 1,
-    backgroundColor: '#E8F5E9',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  userLocation: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#2196F3',
-    borderWidth: 3,
-    borderColor: 'white',
-  },
-  mapTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2E7D32',
-    marginTop: 20,
-  },
-  mapSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 8,
-    paddingHorizontal: 20,
-    textAlign: 'center',
-  },
-  marker: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  markerIcon: {
-    fontSize: 20,
-  },
-  legend: {
-    position: 'absolute',
-    top: 50,
-    right: 16,
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 8,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  legendTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  legendText: {
-    fontSize: 12,
   },
   loadingContainer: {
     flex: 1,
@@ -233,18 +154,27 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    marginTop: 16,
     color: Colors.light.text,
   },
-  loadingOverlay: {
+  debugButton: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    top: 50,
+    right: 16,
+    zIndex: 1000,
+    backgroundColor: '#FF9800',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  debugButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 
