@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { getAmapHtmlTemplate } from '../utils/amap-js-bridge';
 
@@ -53,12 +53,12 @@ export const AmapWebView: React.FC<AmapWebViewProps> = ({
   const webViewRef = useRef<WebView>(null);
   const [apiKey] = useState<string>('5cf2d9bdceb2ce9266c7a489826bf21b'); // TODO: 从环境变量或配置获取
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // 处理 WebView 消息
   const handleWebViewMessage = useCallback((event: WebViewMessageEvent) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-      console.log('AmapWebView收到消息:', data);
 
       switch (data.type) {
         case 'MAP_LOADED':
@@ -68,6 +68,10 @@ export const AmapWebView: React.FC<AmapWebViewProps> = ({
           if (pets.length > 0) {
             sendPetsToWebView(pets);
           }
+          break;
+
+        case 'MAP_ERROR':
+          setError(data.data?.message || '地图加载失败');
           break;
 
         case 'MARKER_CLICK':
@@ -94,12 +98,9 @@ export const AmapWebView: React.FC<AmapWebViewProps> = ({
             onMapClick(data.data);
           }
           break;
-
-        default:
-          console.log('未知消息类型:', data.type);
       }
     } catch (error) {
-      console.error('解析WebView消息失败:', error);
+      // Silent error handling
     }
   }, [pets, onMapLoaded, onMarkerClick, onLocationSuccess, onLocationError, onMapClick]);
 
@@ -153,12 +154,38 @@ export const AmapWebView: React.FC<AmapWebViewProps> = ({
     }
   }, [mapLoaded, pets, sendPetsToWebView]);
 
+
   // 渲染加载指示器
   const renderLoading = () => (
     <View style={styles.loadingContainer}>
       <ActivityIndicator size="large" color="#4CAF50" />
+      <Text style={styles.loadingText}>正在加载地图...</Text>
     </View>
   );
+
+  // 渲染错误提示
+  const renderError = () => (
+    <View style={styles.errorContainer}>
+      <Text style={styles.errorEmoji}>⚠️</Text>
+      <Text style={styles.errorTitle}>地图加载失败</Text>
+      <Text style={styles.errorText}>{error}</Text>
+      <TouchableOpacity style={styles.retryButton} onPress={() => {
+        setError(null);
+        setMapLoaded(false);
+      }}>
+        <Text style={styles.retryButtonText}>重试</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // 如果有错误，显示错误提示
+  if (error) {
+    return (
+      <View style={[styles.container, style]}>
+        {renderError()}
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, style]}>
@@ -173,13 +200,18 @@ export const AmapWebView: React.FC<AmapWebViewProps> = ({
         startInLoadingState={true}
         renderLoading={renderLoading}
         onMessage={handleWebViewMessage}
-        onLoadStart={() => console.log('WebView开始加载')}
-        onLoadEnd={() => console.log('WebView加载完成')}
         onError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
-          console.warn('WebView加载失败:', nativeEvent);
+          setError(`WebView加载失败: ${nativeEvent.description || '未知错误'}`);
         }}
       />
+      {/* 定位按钮 */}
+      <TouchableOpacity
+        style={styles.locationButton}
+        onPress={() => getUserLocation()}
+      >
+        <Text style={styles.locationButtonText}>📍</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -201,6 +233,66 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(245, 245, 245, 0.8)',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff3e0',
+    padding: 20,
+  },
+  errorEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#f57c00',
+    marginBottom: 12,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#e65100',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  locationButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#2196F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  locationButtonText: {
+    fontSize: 24,
+    color: 'white',
   },
 });
 

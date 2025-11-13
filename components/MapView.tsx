@@ -5,7 +5,6 @@ import { PetInfo, PetInfoDB } from '@/lib/database';
 import { Colors } from '@/constants/theme';
 import { useApp } from '@/contexts/AppContext';
 import { AmapWebView } from './AmapWebView';
-import { TestWebView } from './TestWebView';
 import type { AmapWebViewProps } from './AmapWebView';
 
 const { width, height } = Dimensions.get('window');
@@ -16,20 +15,21 @@ interface MapViewProps {
 
 export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress }) => {
   const { user } = useApp();
-  const { location } = useLocation();
+  const { location: initialLocation } = useLocation(); // 保留兼容性
   const [petInfos, setPetInfos] = useState<PetInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [debugMode, setDebugMode] = useState(false); // 调试模式开关
+  const [currentLocation, setCurrentLocation] = useState<{longitude: number, latitude: number} | null>(initialLocation || null);
+  const [currentAddress, setCurrentAddress] = useState<string>('定位中...');
 
   const loadPetInfos = async () => {
-    if (!location || !user) return;
+    if (!currentLocation || !user) return;
 
     try {
       setLoading(true);
       const data = await PetInfoDB.getList({
-        latitude: location.latitude,
-        longitude: location.longitude,
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
         maxDistance: 10, // 10km
         days: 30,
         limit: 100
@@ -43,10 +43,10 @@ export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress }) => {
   };
 
   useEffect(() => {
-    if (location) {
+    if (currentLocation) {
       loadPetInfos();
     }
-  }, [location, user]);
+  }, [currentLocation, user]);
 
   // 处理标记点击
   const handleMarkerClick = (pet: any) => {
@@ -60,13 +60,22 @@ export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress }) => {
   };
 
   // 处理定位成功
-  const handleLocationSuccess = (loc: { longitude: number; latitude: number }) => {
-    console.log('定位成功:', loc);
+  const handleLocationSuccess = (loc: { longitude: number; latitude: number; address?: string }) => {
+    setCurrentLocation({
+      longitude: loc.longitude,
+      latitude: loc.latitude
+    });
+    if (loc.address) {
+      setCurrentAddress(loc.address);
+    } else {
+      setCurrentAddress('定位成功，但无法获取详细地址');
+    }
   };
 
   // 处理定位错误
   const handleLocationError = (error: { message: string }) => {
     console.error('定位失败:', error.message);
+    setCurrentAddress('定位失败');
     Alert.alert('定位失败', '无法获取您的位置信息，请检查定位权限设置。');
   };
 
@@ -75,15 +84,6 @@ export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress }) => {
     console.log('地图加载完成');
     setMapLoaded(true);
   };
-
-  // 如果位置未获取，显示加载状态
-  if (!location) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>正在获取位置信息...</Text>
-      </View>
-    );
-  }
 
   // 转换宠物数据为 AmapWebView 所需的格式
   const petsForMap = petInfos.map(pet => ({
@@ -95,46 +95,31 @@ export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress }) => {
     description: pet.description,
   }));
 
+  // 使用初始位置或北京作为默认中心点
+  const defaultCenter = currentLocation || {
+    longitude: 116.4074,
+    latitude: 39.9042
+  };
+
   return (
     <View style={styles.container}>
-      {/* 调试模式切换按钮 */}
-      <TouchableOpacity
-        style={styles.debugButton}
-        onPress={() => setDebugMode(!debugMode)}
-      >
-        <Text style={styles.debugButtonText}>
-          {debugMode ? '🔙 返回地图' : '🐛 调试模式'}
+      {/* 地址显示条 */}
+      <View style={styles.addressBar}>
+        <Text style={styles.addressText} numberOfLines={1} ellipsizeMode="middle">
+          📍 {currentAddress}
         </Text>
-      </TouchableOpacity>
+      </View>
 
-      {/* 根据调试模式显示不同内容 */}
-      {debugMode ? (
-        <TestWebView
-          onMessage={(data) => {
-            console.log('调试模式收到消息:', data);
-            if (data.type === 'TEST_MESSAGE') {
-              Alert.alert(
-                '🎉 WebView 测试成功！',
-                `WebView 正常工作！\n\n消息内容:\n${JSON.stringify(data.data, null, 2)}`
-              );
-            }
-          }}
-        />
-      ) : (
-        <AmapWebView
-          center={{
-            longitude: location.longitude,
-            latitude: location.latitude,
-          }}
-          zoom={15}
-          pets={petsForMap}
-          onMapLoaded={handleMapLoaded}
-          onMarkerClick={handleMarkerClick}
-          onLocationSuccess={handleLocationSuccess}
-          onLocationError={handleLocationError}
-          style={styles.map}
-        />
-      )}
+      <AmapWebView
+        center={defaultCenter}
+        zoom={16}
+        pets={petsForMap}
+        onMapLoaded={handleMapLoaded}
+        onMarkerClick={handleMarkerClick}
+        onLocationSuccess={handleLocationSuccess}
+        onLocationError={handleLocationError}
+        style={styles.map}
+      />
     </View>
   );
 };
@@ -156,14 +141,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.light.text,
   },
-  debugButton: {
+  addressBar: {
     position: 'absolute',
     top: 50,
-    right: 16,
+    left: 16,
+    right: 80,
     zIndex: 1000,
-    backgroundColor: '#FF9800',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 20,
     elevation: 3,
     shadowColor: '#000',
@@ -171,10 +157,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  debugButtonText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
+  addressText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
   },
 });
 
