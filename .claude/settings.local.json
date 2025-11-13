@@ -3,7 +3,8 @@
     "allow": [
       "WebSearch",
       "WebFetch(domain:www.theshelterpetproject.org)",
-      "WebFetch(domain:www.rescueme.org)"
+      "WebFetch(domain:www.rescueme.org)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

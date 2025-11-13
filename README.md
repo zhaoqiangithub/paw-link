@@ -1,50 +1,248 @@
-# Welcome to your Expo app 👋
+# PawLink 🐾 宠物救助与领养平台
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+一个基于 React Native 和 Expo 构建的跨平台移动应用，用于连接流浪动物救助者和潜在的宠物领养者。
 
-## Get started
+[![Expo](https://img.shields.io/badge/Expo-~54.0.23-blue.svg?style=flat-square)](https://expo.dev/)
+[![React Native](https://img.shields.io/badge/React%20Native-0.81.5-blue.svg?style=flat-square)](https://reactnative.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-~5.9.2-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-latest-green.svg?style=flat-square)](https://www.sqlite.org/)
 
-1. Install dependencies
+## ✨ 特性
 
-   ```bash
-   npm install
-   ```
+### 核心功能
 
-2. Start the app
+- 🗺️ **实时地图** - 查看附近的宠物信息
+- 📝 **快速发布** - 一键发布宠物信息
+- 📷 **图片上传** - 批量上传最多9张图片
+- 🔍 **智能搜索** - 按距离、类型、状态、时间过滤
+- 💬 **多种联系方式** - 电话、微信、QQ、站内私信
+- 💾 **离线优先** - SQLite 本地数据库
+- 🔒 **无需注册** - 基于设备ID的简化用户系统
 
-   ```bash
-   npx expo start
-   ```
+### 支持的宠物状态
 
-In the output, you'll find options to open the app in a
+| 状态 | 颜色 | 图标 | 说明 |
+|------|------|------|------|
+| 需救助 | 🟠 橙色 | 🆘 | 需要帮助的宠物 |
+| 待领养 | 🟢 绿色 | 🐱/🐶 | 寻找领养 |
+| 紧急 | 🔴 红色 | 🚨 | 紧急情况 |
+| 已领养 | ⚪ 灰色 | ✅ | 已找到家 |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🚀 快速开始
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 环境要求
 
-## Get a fresh project
+- Node.js >= 18.x
+- npm >= 9.x
+- iOS Simulator (可选)
+- Android Studio (可选)
 
-When you're ready, run:
+### 安装
 
 ```bash
+# 克隆项目
+git clone <repository-url>
+cd pawlink
+
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm start
+```
+
+### 运行
+
+```bash
+# 运行在 iOS 模拟器
+npm run ios
+
+# 运行在 Android 模拟器
+npm run android
+
+# 运行在 Web 浏览器
+npm run web
+```
+
+## 📱 使用说明
+
+### 主要页面
+
+1. **首页** - 地图视图
+   - 查看附近的宠物信息标记
+   - 点击右下角按钮发布新信息
+   - 点击标记查看详情
+
+2. **探索页** - 搜索列表
+   - 使用筛选功能查找特定信息
+   - 下拉刷新获取最新数据
+   - 查看宠物详细信息
+
+3. **发布页** - 发布信息
+   - 自动获取当前位置
+   - 选择动物类型和状态
+   - 上传图片（最多9张）
+   - 填写联系方式
+
+4. **聊天页** - 私信
+   - 与其他用户实时聊天
+   - 查看消息历史
+
+### 功能演示
+
+```text
+发布流程:
+位置获取 → 类型选择 → 状态选择 → 图片上传 → 填写信息 → 发布
+
+搜索流程:
+设置筛选 → 查看结果 → 点击查看 → 联系方式选择
+```
+
+## 🛠️ 技术栈
+
+### 核心技术
+
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| React Native | 0.81.5 | 跨平台移动框架 |
+| Expo | ~54.0.23 | 移动应用开发平台 |
+| Expo Router | ~6.0.14 | 文件式路由 |
+| TypeScript | ~5.9.2 | 类型安全 |
+| SQLite | latest | 本地数据库 |
+| Expo Location | latest | 位置服务 |
+| Expo Image Picker | latest | 图片选择 |
+
+### 架构图
+
+```
+┌─────────────────────────┐
+│   Presentation Layer    │
+│  (页面 & UI 组件)          │
+├─────────────────────────┤
+│   Business Logic Layer  │
+│ (Hooks & Context)        │
+├─────────────────────────┤
+│   Data Access Layer     │
+│ (SQLite & Device)        │
+└─────────────────────────┘
+```
+
+## 📁 项目结构
+
+```
+pawlink/
+├── app/                    # 路由页面
+│   ├── (tabs)/            # 标签页路由
+│   ├── publish.tsx        # 发布页面
+│   └── chat.tsx           # 聊天页面
+├── components/            # 可复用组件
+├── contexts/              # 状态管理
+├── hooks/                 # 自定义 Hooks
+├── lib/                   # 核心库
+│   ├── database.ts        # SQLite 数据库
+│   └── device.ts          # 设备管理
+├── constants/             # 常量配置
+├── README.md              # 项目说明
+├── DEVELOPMENT.md         # 开发文档 (详细)
+└── package.json           # 依赖配置
+```
+
+## 📊 数据库
+
+### 表结构
+
+- **users** - 用户信息
+- **pet_infos** - 宠物信息
+- **messages** - 聊天记录
+- **reports** - 举报记录
+
+详见 [DEVELOPMENT.md](./DEVELOPMENT.md#数据库设计) 获取详细表结构。
+
+## 🔧 开发命令
+
+```bash
+# 启动开发服务器
+npm start
+
+# 运行在设备上
+npm run ios
+npm run android
+npm run web
+
+# 代码检查
+npm run lint
+
+# 重置项目
 npm run reset-project
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🐛 已知问题
 
-## Learn more
+所有已知问题已在 Iteration 1 中修复：
+- ✅ SQLite API 兼容性问题
+- ✅ 距离计算问题
+- ✅ 路由导出问题
 
-To learn more about developing your project with Expo, look at the following resources:
+## 📚 文档
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- [README.md](./README.md) - 项目概述
+- [DEVELOPMENT.md](./DEVELOPMENT.md) - 开发文档 (详细)
+  - 迭代计划
+  - 功能清单
+  - 架构设计
+  - 测试说明
+  - 下一步计划
 
-## Join the community
+## 🔜 路线图
 
-Join our community of developers creating universal apps.
+### Iteration 2 (计划中)
+- [ ] 宠物详情页面
+- [ ] 用户个人中心
+- [ ] 消息推送通知
+- [ ] 支付众筹功能
+- [ ] AI 图像识别
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Iteration 3 (未来)
+- [ ] 志愿者管理系统
+- [ ] AI 智能审核
+- [ ] 跨平台数据同步
+- [ ] 后端 API 服务
+
+详见 [DEVELOPMENT.md](./DEVELOPMENT.md#下一步计划) 获取详细信息。
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+```bash
+# 开发流程
+1. Fork 项目
+2. 创建功能分支
+3. 提交更改
+4. 推送到分支
+5. 创建 Pull Request
+```
+
+## 📄 许可证
+
+MIT License
+
+## 🏆 成就
+
+- ✅ 跨平台支持 (iOS/Android/Web)
+- ✅ TypeScript 类型安全
+- ✅ 离线优先架构
+- ✅ 自定义地图组件
+- ✅ 完整的功能实现
+
+## 📞 联系方式
+
+- 项目仓库: [GitHub](https://github.com/your-repo)
+- 问题反馈: [Issues](https://github.com/your-repo/issues)
+- 讨论区: [Discussions](https://github.com/your-repo/discussions)
+
+---
+
+**让每一只宠物都能找到家** 🏠🐾
+
+> PawLink - 宠物救助与领养平台 v1.0.0
