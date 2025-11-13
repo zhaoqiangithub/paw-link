@@ -1,0 +1,30 @@
+# Project: Expo React Native TypeScript Supabase Application
+
+## General
+
+- This is an Expo application.
+- Use expo and bun for package manager.
+- Use NativeMind CSS for styling, prefer to use color pink=400 and sky=400, should consider dark mode and use text=foreground and bp=background.
+- Use sonner for toast.
+- Use Zustand for state management.
+- Use react-query for data fetching.
+- Use ~/components for path alias.
+- Use lucide-react-native for icons
+- Use Lingui for il8n and prefer t`` macro
+    * import { Trans } from "@lingui/react/macro"
+    * import { t } from "@lingui/core/macro"
+- Use date-fns for date formatting.
+- Use lodash for utility functions.
+- Component names are in CamelCase.
+
+## File Structure for biblight-mobile
+
+- app/(tabs): Main tabs.
+- hooks/: React hooks.
+- store/: Zustand store.
+- components/: Components.
+- components/ui: Pure UI Components.
+- db/supabase/: Supabase db logic.
+- utils/: Utils.
+
+

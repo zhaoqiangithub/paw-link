@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.theshelterpetproject.org)",
+      "WebFetch(domain:www.rescueme.org)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
