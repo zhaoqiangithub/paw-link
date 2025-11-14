@@ -12,7 +12,39 @@ export const useLocation = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 更强的Web平台检测
+  const isWeb = (() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return false;
+    }
+    // 检查User-Agent是否包含Web相关标识
+    const ua = navigator.userAgent.toLowerCase();
+    const isWebBrowser = ua.includes('chrome') || ua.includes('firefox') || ua.includes('safari');
+    const isWebView = ua.includes('wv') || ua.includes('webview');
+    const isStandalone = window.navigator?.standalone === true;
+
+    console.log('Platform detection:', {
+      userAgent: ua,
+      isWebBrowser,
+      isWebView,
+      isStandalone,
+      result: isWebBrowser && !isStandalone
+    });
+
+    return isWebBrowser && !isStandalone;
+  })();
+
+  console.log('useLocation initialized, isWeb:', isWeb);
+
   const requestLocationPermission = async () => {
+    if (isWeb) {
+      console.log('❌ Web platform detected, skipping permission request');
+      setError('Web端不支持原生定位，请使用浏览器定位');
+      setLoading(false);
+      return false;
+    }
+
+    console.log('✅ Non-web platform, requesting permission...');
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -30,7 +62,29 @@ export const useLocation = () => {
   };
 
   const getCurrentLocation = async () => {
+    if (isWeb) {
+      console.log('❌ Web platform detected, skipping getCurrentLocation');
+      setError('Web端不支持原生定位，请使用浏览器定位');
+      setLoading(false);
+      return;
+    }
+
+    // 检查是否为模拟器（通过Android模拟器错误）
     try {
+      await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+    } catch (err: any) {
+      const errorCode = err?.code;
+      console.log('Location error code:', errorCode);
+      if (errorCode === 'API_UNAVAILABLE' || errorCode === 17) {
+        console.log('⚠️ API_UNAVAILABLE error - likely simulator or no GPS hardware');
+        setError('API_UNAVAILABLE: 此设备不支持GPS，请使用真机或高德地图定位');
+        setLoading(false);
+        return;
+      }
+    }
+
+    try {
+      console.log('✅ Real device detected, getting current location...');
       setLoading(true);
       setError(null);
 
@@ -83,6 +137,13 @@ export const useLocation = () => {
   };
 
   const getAddressFromCoordinates = async (latitude: number, longitude: number): Promise<string | undefined> => {
+    // 检查是否为Web平台
+    const isWeb = typeof window !== 'undefined' && typeof document !== 'undefined';
+    if (isWeb) {
+      console.log('Web platform detected, skipping reverse geocoding');
+      return undefined;
+    }
+
     try {
       const reverseGeocode = await Location.reverseGeocodeAsync({
         latitude,
@@ -130,7 +191,16 @@ export const useLocation = () => {
   };
 
   useEffect(() => {
-    getCurrentLocation();
+    // 检查是否为Web平台
+    const isWeb = typeof window !== 'undefined' && typeof document !== 'undefined';
+
+    if (!isWeb) {
+      console.log('Non-web platform detected, getting location automatically');
+      getCurrentLocation();
+    } else {
+      console.log('Web platform detected, skipping automatic location request');
+      setLoading(false);
+    }
   }, []);
 
   return {

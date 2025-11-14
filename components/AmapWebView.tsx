@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { getAmapHtmlTemplate } from '../utils/amap-js-bridge';
 
@@ -39,19 +39,22 @@ const DEFAULT_CENTER = {
   latitude: 39.90403,
 };
 
-export const AmapWebView: React.FC<AmapWebViewProps> = ({
-  center = DEFAULT_CENTER,
-  zoom = 15,
-  pets = [],
-  onMapLoaded,
-  onMarkerClick,
-  onLocationSuccess,
-  onLocationError,
-  onMapClick,
-  style,
-}) => {
-  const webViewRef = useRef<WebView>(null);
-  const [apiKey] = useState<string>('5cf2d9bdceb2ce9266c7a489826bf21b'); // TODO: 从环境变量或配置获取
+export const AmapWebView: React.FC<AmapWebViewProps & { webViewRef?: React.RefObject<WebView> }> = (props) => {
+  const {
+    center = DEFAULT_CENTER,
+    zoom = 15,
+    pets = [],
+    onMapLoaded,
+    onMarkerClick,
+    onLocationSuccess,
+    onLocationError,
+    onMapClick,
+    style,
+    webViewRef
+  } = props;
+
+  const internalWebViewRef = useRef<WebView>(null);
+  const [apiKey] = useState<string>('f4f3fe154db5361fad122db55f64178c'); // TODO: 从环境变量或配置获取
   const [mapLoaded, setMapLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -190,7 +193,7 @@ export const AmapWebView: React.FC<AmapWebViewProps> = ({
   return (
     <View style={[styles.container, style]}>
       <WebView
-        ref={webViewRef}
+        ref={webViewRef ? webViewRef : internalWebViewRef}
         source={{
           html: getAmapHtmlTemplate(apiKey, center, zoom),
         }}
@@ -298,16 +301,15 @@ const styles = StyleSheet.create({
 
 // 导出方法，供外部调用
 export const AmapWebViewMethods = {
-  getUserLocation: (ref: React.RefObject<React.Component<AmapWebViewProps>>) => {
-    // @ts-ignore - 访问内部方法
+  getUserLocation: (ref: React.RefObject<any>) => {
     ref.current?.getUserLocation?.();
   },
-  clearPetMarkers: (ref: React.RefObject<React.Component<AmapWebViewProps>>) => {
-    // @ts-ignore - 访问内部方法
+  clearPetMarkers: (ref: React.RefObject<any>) => {
     ref.current?.clearPetMarkers?.();
   },
-  setMapCenter: (ref: React.RefObject<React.Component<AmapWebViewProps>>, lng: number, lat: number) => {
-    // @ts-ignore - 访问内部方法
+  setMapCenter: (ref: React.RefObject<any>, lng: number, lat: number) => {
     ref.current?.setMapCenter?.(lng, lat);
   },
 };
+
+export default AmapWebView;

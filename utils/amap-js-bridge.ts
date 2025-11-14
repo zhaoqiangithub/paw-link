@@ -55,18 +55,29 @@ export const getInitMapScript = (
         if (loadingDiv) {
           loadingDiv.style.display = 'none';
         }
-        // 自动获取用户位置
-        setTimeout(function() {
-          if (typeof window.getUserLocation === 'function') {
-            window.getUserLocation();
-          }
-        }, 500);
+
         // 发送加载完成消息到 React Native
         if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
           window.ReactNativeWebView.postMessage(JSON.stringify({
             type: 'MAP_LOADED',
             data: {}
           }));
+        }
+
+        // 检查是否为Web平台（通过User-Agent）
+        const isWeb = typeof navigator !== 'undefined' && navigator.userAgent.indexOf('WebView') === -1;
+        console.log('Platform check:', isWeb ? 'Web' : 'Native');
+
+        // 只在Native平台自动定位，Web端需要用户手动点击定位按钮
+        if (!isWeb) {
+          setTimeout(function() {
+            if (typeof window.getUserLocation === 'function') {
+              console.log('Auto-getting location for native platform');
+              window.getUserLocation();
+            }
+          }, 500);
+        } else {
+          console.log('Web platform detected, waiting for user to click location button');
         }
       });
 
@@ -153,14 +164,17 @@ export const getInitMapScript = (
     // 获取用户位置
     window.getUserLocation = function() {
       if (!window.AMapReady) {
+        console.log('AMap not ready yet');
         return;
       }
+
+      console.log('Starting location request...');
 
       AMap.plugin('AMap.Geolocation', function() {
         const geolocation = new AMap.Geolocation({
           enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 3000,
+          timeout: 10000,
+          maximumAge: 0,
           convert: true,
           showButton: false,
           showMarker: true,
@@ -168,7 +182,23 @@ export const getInitMapScript = (
           zoomToAccuracy: true
         });
 
+        // 设置超时处理
+        const timeoutId = setTimeout(function() {
+          console.log('Location request timeout');
+          if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'LOCATION_ERROR',
+              data: {
+                message: '定位超时，请检查定位权限和网络连接'
+              }
+            }));
+          }
+        }, 12000);
+
         geolocation.getCurrentPosition(function(status, result) {
+          clearTimeout(timeoutId);
+          console.log('Location status:', status, 'result:', result);
+
           if (status === 'complete') {
             const location = result.position;
 
@@ -196,14 +226,16 @@ export const getInitMapScript = (
             window.map.setCenter([location.lng, location.lat]);
             window.map.setZoom(16);
 
+            console.log('Location success:', location.lng, location.lat);
+
             // 地理编码：将坐标转换为具体街道地址
             AMap.plugin('AMap.Geocoder', function() {
               const geocoder = new AMap.Geocoder({
-                city: 'beijing',
                 batch: false
               });
 
               geocoder.getAddress([location.lng, location.lat], function(status, result) {
+                console.log('Geocoder status:', status);
                 if (status === 'complete' && result.geocodes.length > 0) {
                   const addressComponent = result.geocodes[0].addressComponent;
                   const streetNumber = result.geocodes[0].street;
@@ -217,26 +249,29 @@ export const getInitMapScript = (
                   if (streetNumber) detailedAddress += streetNumber;
                   if (addressComponent.township) detailedAddress += addressComponent.township;
 
+                  console.log('Address:', detailedAddress || formattedAddress);
+
                   if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
                     window.ReactNativeWebView.postMessage(JSON.stringify({
                       type: 'LOCATION_SUCCESS',
                       data: {
                         longitude: location.lng,
                         latitude: location.lat,
-                        accuracy: result.accuracy,
-                        address: detailedAddress || formattedAddress
+                        accuracy: result.accuracy || 0,
+                        address: detailedAddress || formattedAddress || '未知地址'
                       }
                     }));
                   }
                 } else {
+                  console.log('Geocoder failed, sending location without address');
                   if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
                     window.ReactNativeWebView.postMessage(JSON.stringify({
                       type: 'LOCATION_SUCCESS',
                       data: {
                         longitude: location.lng,
                         latitude: location.lat,
-                        accuracy: result.accuracy,
-                        address: '无法获取详细地址'
+                        accuracy: 0,
+                        address: '定位成功，但无法获取详细地址'
                       }
                     }));
                   }
@@ -244,11 +279,13 @@ export const getInitMapScript = (
               });
             });
           } else {
+            console.error('Location failed:', result.message || 'Unknown error');
             if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
               window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'LOCATION_ERROR',
                 data: {
-                  message: result.message || '定位失败'
+                  message: result.message || '定位失败，请检查定位权限设置',
+                  code: result.code || 0
                 }
               }));
             }
