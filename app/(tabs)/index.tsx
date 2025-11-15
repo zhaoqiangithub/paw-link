@@ -1,216 +1,477 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, Alert, FlatList } from 'react-native';
-import MapComponent from '@/components/MapView';
-import { ThemedText } from '@/components/themed-text';
+import React, { useEffect, useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { Image } from 'expo-image';
+
+import { MapComponent } from '@/components/MapView';
 import { ThemedView } from '@/components/themed-view';
 import { useLocation } from '@/hooks/use-location';
-import { Link } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/theme';
-import { useApp } from '@/contexts/AppContext';
-import { PetInfo, RecommendationEngine } from '@/lib/database';
-import { RecommendationEngine as RecEngine } from '@/lib/recommendation';
+import { PetInfo, PetInfoDB } from '@/lib/database';
+
+const STATUS_FILTERS = [
+  { key: 'for_adoption', label: '待领养' },
+  { key: 'needs_rescue', label: '需救助' },
+  { key: 'emergency', label: '紧急' },
+];
+
+const DISTANCE_OPTIONS = [5, 10, 20];
 
 export default function HomeScreen() {
-  const { location, loading: locationLoading, error: locationError } = useLocation();
-  const { user } = useApp();
-  const [showRecommendations, setShowRecommendations] = useState(false);
+  const insets = useSafeAreaInsets();
+  const { location, error: locationError } = useLocation();
+  const [statusFilter, setStatusFilter] = useState<string>('for_adoption');
+  const [distance, setDistance] = useState<number>(5);
+  const [petInfos, setPetInfos] = useState<PetInfo[]>([]);
 
-  const handleMarkerPress = (petInfo: PetInfo) => {
-    Alert.alert(
-      petInfo.title,
-      `${petInfo.description}\n\n状态: ${petInfo.status === 'needs_rescue' ? '需救助' : petInfo.status === 'for_adoption' ? '待领养' : petInfo.status === 'adopted' ? '已领养' : '紧急'}\n位置: ${petInfo.address}`,
-      [
-        {
-          text: '查看详情',
-          onPress: () => {
-            // TODO: 导航到详情页
-          }
-        },
-        {
-          text: '联系主人',
-          onPress: () => {
-            // TODO: 打开联系选项
-          }
-        },
-        { text: '取消', style: 'cancel' }
-      ]
-    );
+  useEffect(() => {
+    const loadPets = async () => {
+      if (!location) return;
+      try {
+        const data = await PetInfoDB.getList({
+          status: statusFilter as PetInfo['status'],
+          latitude: location.latitude,
+          longitude: location.longitude,
+          maxDistance: distance,
+          days: 30,
+          limit: 200,
+        });
+        setPetInfos(data);
+      } catch (err) {
+        console.error('load pet infos failed', err);
+      }
+    };
+    loadPets();
+  }, [location, statusFilter, distance]);
+
+  const cycleDistance = () => {
+    const idx = DISTANCE_OPTIONS.indexOf(distance);
+    const nextIdx = (idx + 1) % DISTANCE_OPTIONS.length;
+    setDistance(DISTANCE_OPTIONS[nextIdx]);
   };
-
-  const handleShowRecommendations = () => {
-    setShowRecommendations(!showRecommendations);
-  };
-
-  if (locationError) {
-    return (
-      <ThemedView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Ionicons name="location-outline" size={64} color={Colors.light.icon} />
-          <ThemedText type="title" style={styles.errorTitle}>无法获取位置</ThemedText>
-          <ThemedText style={styles.errorText}>{locationError}</ThemedText>
-          <TouchableOpacity style={styles.retryButton} onPress={() => window.location.reload()}>
-            <Text style={styles.retryButtonText}>重试</Text>
-          </TouchableOpacity>
-        </View>
-      </ThemedView>
-    );
-  }
 
   return (
     <ThemedView style={styles.container}>
-      <MapComponent onMarkerPress={handleMarkerPress} />
-      <View style={styles.fabContainer}>
-        <Link href="/publish" asChild>
-          <TouchableOpacity style={styles.fab}>
-            <Ionicons name="add" size={24} color="white" />
-          </TouchableOpacity>
-        </Link>
-        <TouchableOpacity
-          style={[styles.recommendationButton, showRecommendations && styles.recommendationButtonActive]}
-          onPress={handleShowRecommendations}
-        >
-          <Ionicons name="bulb" size={24} color={showRecommendations ? 'white' : Colors.light.tint} />
-        </TouchableOpacity>
-      </View>
-
-      {/* 智能推荐面板 */}
-      {showRecommendations && location && (
-        <View style={styles.recommendationPanel}>
-          <View style={styles.recommendationHeader}>
-            <Ionicons name="star" size={20} color={Colors.light.tint} />
-            <ThemedText style={styles.recommendationTitle}>智能推荐</ThemedText>
-            <TouchableOpacity onPress={() => setShowRecommendations(false)}>
-              <Ionicons name="close" size={24} color={Colors.light.icon} />
+      <View style={[styles.hero, { paddingTop: insets.top + 8 }]}>
+        <View style={styles.heroHeader}>
+          <View>
+            <Text style={styles.brand}>PawLink</Text>
+            <Text style={styles.locationLabel}>
+              我在 {location?.address || '定位中...'}
+            </Text>
+          </View>
+          <View style={styles.heroActions}>
+            <TouchableOpacity style={styles.iconButton}>
+              <Ionicons name="notifications-outline" size={20} color="#fff" />
+              <View style={styles.badge} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton}>
+              <Ionicons name="person-circle-outline" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
-          <ThemedText style={styles.recommendationHint}>
-            基于您的位置和行为偏好，为您推荐附近的宠物信息
-          </ThemedText>
-          <TouchableOpacity style={styles.recommendationAction}>
-            <Text style={styles.recommendationActionText}>查看推荐</Text>
+        </View>
+
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={18} color="#8EA1E6" />
+          <Text style={styles.searchPlaceholder}>搜索附近的宠物、地点...</Text>
+          <Ionicons name="funnel-outline" size={18} color="#8EA1E6" />
+        </View>
+
+        <View style={styles.statusRow}>
+          {STATUS_FILTERS.map((item) => {
+            const active = statusFilter === item.key;
+            return (
+              <TouchableOpacity
+                key={item.key}
+                style={[styles.statusChip, active && styles.statusChipActive]}
+                onPress={() => setStatusFilter(item.key)}
+              >
+                <Text style={[styles.statusChipText, active && styles.statusChipTextActive]}>
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+          <TouchableOpacity style={styles.distanceChip} onPress={cycleDistance}>
+            <Ionicons name="locate" size={14} color="#fff" />
+            <Text style={styles.distanceChipText}>{distance}km内</Text>
           </TouchableOpacity>
         </View>
-      )}
+
+      </View>
+
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.mapSection}>
+          <MapComponent
+            onMarkerPress={(petInfo) =>
+              router.push({ pathname: '/pet-detail', params: { id: petInfo.id } })
+            }
+          />
+          <View style={styles.mapControls}>
+            <TouchableOpacity style={styles.controlButton}>
+              <Ionicons name="add" size={18} color="#1F2A44" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.controlButton}>
+              <Ionicons name="remove" size={18} color="#1F2A44" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.controlButton}>
+              <Ionicons name="locate" size={18} color="#1F2A44" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.legendRow}>
+            <LegendDot color="#FF6B6B" label="紧急救助" />
+            <LegendDot color="#4ECDC4" label="待领养" />
+            <LegendDot color="#2ECC71" label="已救助" />
+          </View>
+          <View style={styles.mapLocationChip}>
+            <Ionicons name="location" size={16} color="#2C6CFF" />
+            <Text style={styles.mapLocationText}>
+              我在 {location?.address || '正在定位'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.petCarousel}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.petCarouselContent}
+          >
+            {petInfos.slice(0, 5).map((pet) => (
+              <TouchableOpacity
+                key={pet.id}
+                style={styles.petCard}
+                onPress={() => router.push({ pathname: '/pet-detail', params: { id: pet.id } })}
+              >
+                <View style={styles.petImageWrapper}>
+                  <Image
+                    source={{ uri: pet.images?.[0] || 'https://placekitten.com/400/300' }}
+                    style={styles.petImage}
+                    contentFit="cover"
+                  />
+                  <View style={[styles.petBadge, getBadgeStyle(pet.status)]}>
+                    <Text style={styles.petBadgeText}>{getStatusLabel(pet.status)}</Text>
+                  </View>
+                </View>
+                <Text style={styles.petTitle} numberOfLines={1}>
+                  {pet.title}
+                </Text>
+                <Text style={styles.petMeta} numberOfLines={1}>
+                  {pet.description}
+                </Text>
+                <Text style={styles.petMetaHint}>
+                  {pet.address || '未知地点'} · {getTimeLabel(pet.createdAt)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {locationError && (
+          <View style={styles.errorBanner}>
+            <Ionicons name="warning-outline" size={16} color="#FF6B6B" />
+            <Text style={styles.errorText}>{locationError}</Text>
+          </View>
+        )}
+      </ScrollView>
     </ThemedView>
   );
+}
+
+function LegendDot({ color, label }: { color: string; label: string }) {
+  return (
+    <View style={styles.legendItem}>
+      <View style={[styles.legendDot, { backgroundColor: color }]} />
+      <Text style={styles.legendText}>{label}</Text>
+    </View>
+  );
+}
+
+const STATUS_BADGE_STYLES: Record<PetInfo['status'], { backgroundColor: string }> = {
+  for_adoption: { backgroundColor: '#4ECDC4' },
+  needs_rescue: { backgroundColor: '#FF6B6B' },
+  emergency: { backgroundColor: '#FF9F43' },
+  adopted: { backgroundColor: '#2ECC71' },
+};
+
+const STATUS_LABELS: Record<PetInfo['status'], string> = {
+  for_adoption: '待领养',
+  needs_rescue: '需救助',
+  emergency: '紧急救助',
+  adopted: '已救助',
+};
+
+function getBadgeStyle(status: PetInfo['status']) {
+  return STATUS_BADGE_STYLES[status] || { backgroundColor: '#4B5675' };
+}
+
+function getStatusLabel(status: PetInfo['status']) {
+  return STATUS_LABELS[status] || '信息';
+}
+
+function getTimeLabel(createdAt: number) {
+  const hours = Math.max(1, Math.round((Date.now() - createdAt) / (1000 * 60 * 60)));
+  if (hours < 24) {
+    return `${hours}小时前`;
+  }
+  const days = Math.round(hours / 24);
+  return `${days}天前`;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F5F7FF',
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  hero: {
+    backgroundColor: '#2C6CFF',
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  heroHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
   },
-  errorTitle: {
-    marginTop: 16,
-    marginBottom: 8,
+  brand: {
+    color: '#fff',
+    fontSize: 26,
+    fontWeight: '700',
   },
-  errorText: {
-    textAlign: 'center',
-    marginBottom: 24,
-    opacity: 0.7,
+  locationLabel: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 12,
+    marginTop: 4,
   },
-  retryButton: {
-    backgroundColor: Colors.light.tint,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  fabContainer: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    flexDirection: 'column',
+  heroActions: {
+    flexDirection: 'row',
     gap: 12,
   },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.light.tint,
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
-  recommendationButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    borderWidth: 2,
-    borderColor: Colors.light.tint,
-  },
-  recommendationButtonActive: {
-    backgroundColor: Colors.light.tint,
-    borderColor: Colors.light.tint,
-  },
-  recommendationPanel: {
+  badge: {
     position: 'absolute',
-    top: 80,
-    left: 20,
-    right: 20,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4.65,
+    top: 8,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF5E5E',
   },
-  recommendationHeader: {
+  searchBar: {
+    marginTop: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     gap: 8,
   },
-  recommendationTitle: {
+  searchPlaceholder: {
     flex: 1,
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: '#9AA7D5',
+    fontSize: 14,
   },
-  recommendationHint: {
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 14,
+    gap: 8,
+  },
+  statusChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  statusChipActive: {
+    backgroundColor: '#fff',
+  },
+  statusChipText: {
+    color: 'rgba(255,255,255,0.9)',
     fontSize: 13,
-    opacity: 0.7,
-    marginBottom: 12,
+    fontWeight: '600',
+  },
+  statusChipTextActive: {
+    color: '#2C6CFF',
+  },
+  distanceChip: {
+    marginLeft: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#1F55DA',
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  distanceChipText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingBottom: 120,
+    gap: 16,
+    marginTop: -20,
+  },
+  mapSection: {
+    height: 360,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: '#DEE7FF',
+  },
+  mapControls: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+    gap: 8,
+  },
+  controlButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  legendRow: {
+    position: 'absolute',
+    left: 12,
+    bottom: 12,
+    flexDirection: 'row',
+    gap: 12,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  legendText: {
+    fontSize: 11,
+    color: '#1F2A44',
+    fontWeight: '600',
+  },
+  mapLocationChip: {
+    position: 'absolute',
+    left: 16,
+    bottom: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fff',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  mapLocationText: {
+    color: '#1F2A44',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  petCarousel: {
+    marginTop: 12,
+  },
+  petCarouselContent: {
+    gap: 12,
+    paddingRight: 20,
+  },
+  petCard: {
+    width: 200,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    padding: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  petImageWrapper: {
+    width: '100%',
+    height: 110,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 10,
+    position: 'relative',
+  },
+  petImage: {
+    width: '100%',
+    height: '100%',
+  },
+  petBadge: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  petBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  petTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1F2A44',
+  },
+  petMeta: {
+    marginTop: 6,
+    color: '#8A94A6',
+    fontSize: 12,
     lineHeight: 18,
   },
-  recommendationAction: {
-    backgroundColor: Colors.light.tint,
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
+  petMetaHint: {
+    marginTop: 4,
+    color: '#8A94A6',
+    fontSize: 11,
   },
-  recommendationActionText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFEAEA',
+    padding: 12,
+    borderRadius: 14,
+    gap: 8,
+  },
+  errorText: {
+    color: '#FF6B6B',
+    fontSize: 12,
   },
 });

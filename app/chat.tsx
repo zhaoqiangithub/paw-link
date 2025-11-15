@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -19,20 +19,19 @@ interface ChatScreenProps {
     params: {
       userId: string;
       petInfoId: string;
-      userName: string;
     };
   };
 }
 
 export default function ChatScreen({ route }: ChatScreenProps) {
   const { user } = useApp();
-  const { userId, petInfoId, userName } = route.params;
+  const { userId, petInfoId } = route.params;
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -44,7 +43,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     } catch (error) {
       console.error('Error loading messages:', error);
     }
-  };
+  }, [user, userId, petInfoId]);
 
   const sendMessage = async () => {
     if (!inputText.trim() || !user || sending) return;
@@ -68,7 +67,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
   useEffect(() => {
     loadMessages();
-  }, [user, userId, petInfoId]);
+  }, [loadMessages]);
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isOwn = item.fromUserId === user?.id;

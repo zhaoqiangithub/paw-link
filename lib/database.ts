@@ -602,6 +602,30 @@ export const PetInfoDB = {
       console.error('Error getting pet infos by user:', error);
       return [];
     }
+  },
+
+  // 根据ID获取单条宠物信息
+  getById: async (id: string): Promise<PetInfo | null> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM pet_infos WHERE id = ? LIMIT 1'
+      );
+      try {
+        const result = await stmt.executeAsync([id]);
+        const row = await result.getFirstAsync();
+        if (!row) return null;
+        return {
+          ...row,
+          images: JSON.parse(row.images || '[]')
+        } as PetInfo;
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error getting pet info by id:', error);
+      return null;
+    }
   }
 };
 

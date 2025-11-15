@@ -2,11 +2,11 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
+import { ActivityIndicator, Text, View } from 'react-native';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AppProvider, useApp } from '@/contexts/AppContext';
 import { MessageProvider } from '@/contexts/MessageContext';
-import { ActivityIndicator, View, Text } from 'react-native';
 import { Colors } from '@/constants/theme';
 
 export const unstable_settings = {
@@ -47,6 +47,9 @@ function RootLayoutContent() {
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         <Stack.Screen name="chat" options={{ headerShown: false }} />
         <Stack.Screen name="publish" options={{ headerShown: false }} />
+        <Stack.Screen name="community" options={{ headerShown: false }} />
+        <Stack.Screen name="volunteer" options={{ headerShown: false }} />
+        <Stack.Screen name="pet-detail" options={{ headerShown: false }} />
       </Stack>
     </MessageProvider>
   );
@@ -58,7 +61,9 @@ export default function RootLayout() {
   return (
     <AppProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <RootLayoutContent />
+        <View style={{ flex: 1 }}>
+          <RootLayoutContent />
+        </View>
         <StatusBar style="auto" />
       </ThemeProvider>
     </AppProvider>
