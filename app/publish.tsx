@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import {
   Alert,
   Image,
@@ -22,6 +22,7 @@ import { useApp } from '@/contexts/AppContext';
 import { useImagePicker } from '@/hooks/use-image-picker';
 import { useLocation } from '@/hooks/use-location';
 import { PetInfoDB } from '@/lib/database';
+import { AIModerationService } from '@/lib/services/ai-moderation';
 import { Gradients } from '@/constants/theme';
 
 const PET_TYPES = [
@@ -105,9 +106,59 @@ export default function PublishScreen() {
   });
 
   const [submitting, setSubmitting] = useState(false);
-  const currentStep = location ? 3 : 2;
-  const progressWidth = `${(currentStep / FORM_STEPS.length) * 100}%`;
-  const currentStepLabel = FORM_STEPS[currentStep - 1];
+  const [currentStepIndex, setCurrentStepIndex] = useState(0); // 0: 发布类型, 1: 基本信息, 2: 选择位置, 3: 完成
+
+  // 创建refs
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // 计算进度
+  const progressWidth = `${((currentStepIndex + 1) / FORM_STEPS.length) * 100}%`;
+  const currentStepLabel = FORM_STEPS[currentStepIndex];
+
+  // 获取按钮文本
+  const getActionButtonText = () => {
+    if (currentStepIndex === 0) return '下一步 · 基本信息';
+    if (currentStepIndex === 1) return '下一步 · 选择位置';
+    if (currentStepIndex === 2) {
+      return location ? '发布信息' : '选择位置';
+    }
+    return '下一步';
+  };
+
+  // 滚动监听来确定当前步骤
+  const handleScroll = (event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const scrollViewHeight = event.nativeEvent.layoutMeasurement.height;
+    const contentHeight = event.nativeEvent.contentSize.height;
+
+    // 计算滚动位置百分比
+    const scrollPercent = offsetY / Math.max(contentHeight - scrollViewHeight, 1);
+
+    // 根据滚动位置更新步骤（仅在未选择位置时）
+    if (currentStepIndex < 2) {
+      if (scrollPercent < 0.3) {
+        setCurrentStepIndex(0); // 发布类型
+      } else if (scrollPercent < 0.7) {
+        setCurrentStepIndex(1); // 基本信息
+      } else {
+        setCurrentStepIndex(2); // 选择位置
+      }
+    }
+  };
+
+  // 监听路由返回，更新步骤状态
+  useEffect(() => {
+    const unsubscribe = router.addListener?.('focus', () => {
+      // 当从位置选择页面返回时，如果已有位置，则进入"完成"步骤
+      if (location) {
+        setCurrentStepIndex(3); // 完成步骤
+      }
+    });
+
+    return () => {
+      unsubscribe?.();
+    };
+  }, [location]);
 
   const genderLabel = useMemo(
     () => GENDER_OPTIONS.find((g) => g.value === formData.gender)?.label ?? '',
@@ -137,6 +188,9 @@ export default function PublishScreen() {
     }
     if (!formData.description.trim()) {
       Alert.alert('提示', '请描述动物的情况');
+    }
+    if (images.length < 1) {
+      Alert.alert('提示', '请至少上传1张照片');
       return;
     }
 
@@ -145,6 +199,31 @@ export default function PublishScreen() {
       const imageUris = images.map((img) => img.uri);
       const description = `${formData.description.trim()}\n\n【性别】${genderLabel}\n【年龄】${ageLabel}\n【健康状况】${healthLabel}`;
 
+      // AI 审核
+      const moderationResult = await AIModerationService.moderate({
+        images: imageUris,
+        description,
+        title: formData.title.trim(),
+        location: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          address: location.address || '未知地址'
+        },
+        userId: user.id
+      });
+
+      // 审核不通过
+      if (!moderationResult.passed) {
+        const message = `内容审核未通过：\n\n${moderationResult.reasons.join('\n')}${
+          moderationResult.suggestions && moderationResult.suggestions.length > 0
+            ? `\n\n建议：\n${moderationResult.suggestions.join('\n')}`
+            : ''
+        }`;
+        Alert.alert('审核提示', message);
+        return;
+      }
+
+      // 保存到数据库
       await PetInfoDB.create({
         userId: user.id,
         type: formData.type,
@@ -190,10 +269,21 @@ export default function PublishScreen() {
   };
 
   const handlePrimaryAction = () => {
-    if (!location) {
-      getCurrentLocation();
-    } else {
-      handleSubmit();
+    if (currentStepIndex === 0) {
+      // 当前在发布类型步骤，滚动到基本信息
+      setCurrentStepIndex(1);
+      scrollViewRef.current?.scrollTo({ y: 400, animated: true });
+    } else if (currentStepIndex === 1) {
+      // 当前在基本信息步骤，进入位置选择
+      setCurrentStepIndex(2);
+      router.push('/select-location');
+    } else if (currentStepIndex === 2) {
+      // 如果已有位置，直接提交
+      if (location) {
+        handleSubmit();
+      } else {
+        router.push('/select-location');
+      }
     }
   };
 
@@ -254,11 +344,8 @@ export default function PublishScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <LinearGradient colors={Gradients.blue} style={styles.header}>
+        <View style={styles.fixedHeader}>
+          <LinearGradient colors={Gradients.blue} style={styles.headerGradient}>
             <View style={styles.topActions}>
               <TouchableOpacity style={styles.navButton} onPress={handleBack}>
                 <Ionicons name="chevron-back" size={22} color="#fff" />
@@ -271,27 +358,21 @@ export default function PublishScreen() {
             <View style={styles.progressInfo}>
               <Text style={styles.progressLabel}>{currentStepLabel}</Text>
               <Text style={styles.progressCount}>
-                {currentStep}/{FORM_STEPS.length}
+                {currentStepIndex + 1}/{FORM_STEPS.length}
               </Text>
             </View>
             <View style={styles.progressBarTrack}>
               <View style={[styles.progressBarFill, { width: progressWidth }]} />
             </View>
-            <View style={styles.progressSteps}>
-              {FORM_STEPS.map((label, index) => {
-                const active = index + 1 === currentStep;
-                return (
-                  <Text
-                    key={label}
-                    style={[styles.progressStep, active && styles.progressStepActive]}
-                  >
-                    {label}
-                  </Text>
-                );
-              })}
-            </View>
           </LinearGradient>
-
+        </View>
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        >
           <ThemedView style={styles.body}>
             <View style={styles.sectionCard}>
               <View style={styles.sectionHeader}>
@@ -493,7 +574,7 @@ export default function PublishScreen() {
             disabled={submitting}
           >
             <Text style={styles.primaryActionText}>
-              {location ? (submitting ? '发布中...' : '发布信息') : '下一步 · 选择位置'}
+              {submitting ? '发布中...' : getActionButtonText()}
             </Text>
           </TouchableOpacity>
         </View>
@@ -512,20 +593,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F7FF',
   },
   scrollContent: {
+    paddingTop: 180,
     paddingBottom: 180,
   },
-  header: {
-    backgroundColor: '#3A7AFE',
+  fixedHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
+  headerGradient: {
     paddingTop: 12,
     paddingHorizontal: 20,
-    paddingBottom: 28,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   topActions: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 16,
   },
   navButton: {
     width: 40,
@@ -552,7 +641,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   progressInfo: {
-    marginTop: 18,
+    marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -560,34 +649,22 @@ const styles = StyleSheet.create({
   progressLabel: {
     color: 'rgba(255,255,255,0.9)',
     fontSize: 14,
+    fontWeight: '600',
   },
   progressCount: {
     color: '#fff',
     fontWeight: '700',
   },
   progressBarTrack: {
-    marginTop: 12,
-    height: 6,
+    height: 8,
     borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.25)',
+    overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
     borderRadius: 999,
     backgroundColor: '#fff',
-  },
-  progressSteps: {
-    marginTop: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  progressStep: {
-    color: 'rgba(255,255,255,0.65)',
-    fontSize: 12,
-  },
-  progressStepActive: {
-    color: '#fff',
-    fontWeight: '600',
   },
   body: {
     marginTop: -32,

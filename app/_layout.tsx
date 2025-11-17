@@ -47,6 +47,12 @@ function RootLayoutContent() {
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         <Stack.Screen name="chat" options={{ headerShown: false }} />
         <Stack.Screen name="publish" options={{ headerShown: false }} />
+        <Stack.Screen name="select-location" options={{ headerShown: false }} />
+        <Stack.Screen name="verification" options={{ headerShown: false }} />
+        <Stack.Screen name="my-posts" options={{ headerShown: false }} />
+        <Stack.Screen name="my-adoptions" options={{ headerShown: false }} />
+        <Stack.Screen name="my-favorites" options={{ headerShown: false }} />
+        <Stack.Screen name="volunteer-activities" options={{ headerShown: false }} />
         <Stack.Screen name="community" options={{ headerShown: false }} />
         <Stack.Screen name="volunteer" options={{ headerShown: false }} />
         <Stack.Screen name="pet-detail" options={{ headerShown: false }} />

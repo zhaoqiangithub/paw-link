@@ -5,9 +5,11 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
 import { useApp } from '@/contexts/AppContext';
@@ -76,6 +78,37 @@ export default function ProfileScreen() {
     loadStats();
   }, [user]);
 
+  const handleActivityPress = (key: string) => {
+    switch (key) {
+      case 'posts':
+        router.push('/my-posts');
+        break;
+      case 'adoptions':
+        router.push('/my-adoptions');
+        break;
+      case 'favorites':
+        router.push('/my-favorites');
+        break;
+      case 'volunteer':
+        router.push('/volunteer-activities');
+        break;
+      default:
+        Alert.alert('提示', '功能开发中，敬请期待');
+    }
+  };
+
+  const handleCertificationPress = (type: string) => {
+    if (type === 'realname') {
+      router.push('/verification');
+    } else if (type === 'volunteer') {
+      router.push('/verification');
+    }
+  };
+
+  const handleServicePress = (label: string) => {
+    Alert.alert('提示', `${label}功能开发中，敬请期待`);
+  };
+
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -116,13 +149,17 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.activityGrid}>
             {ACTIVITY_SHORTCUTS.map((item) => (
-              <View key={item.key} style={styles.activityCard}>
+              <TouchableOpacity
+                key={item.key}
+                style={styles.activityCard}
+                onPress={() => handleActivityPress(item.key)}
+              >
                 <View style={[styles.activityIcon, { backgroundColor: item.color + '22' }]}>
                   <Ionicons name={item.icon as any} size={20} color={item.color} />
                 </View>
                 <Text style={styles.activityLabel}>{item.label}</Text>
                 <Text style={styles.activityValue}>{item.value}</Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
@@ -131,24 +168,34 @@ export default function ProfileScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>能力与认证</Text>
           </View>
-          <View style={styles.certificationCard}>
-            <View style={styles.certificationItem}>
-              <Ionicons name="shield-checkmark" size={24} color="#58C6AF" />
+          <View style={styles.certificationList}>
+            <TouchableOpacity
+              style={styles.certificationItem}
+              onPress={() => handleCertificationPress('realname')}
+            >
+              <View style={styles.certIconContainer}>
+                <Ionicons name="shield-checkmark" size={24} color="#58C6AF" />
+              </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.certTitle}>实名认证</Text>
                 <Text style={styles.certDesc}>已完成认证，享受更多服务</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#CBD2E3" />
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.certificationItem}>
-              <Ionicons name="ribbon" size={24} color="#FF9F43" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.certificationItem}
+              onPress={() => handleCertificationPress('volunteer')}
+            >
+              <View style={styles.certIconContainer}>
+                <Ionicons name="ribbon" size={24} color="#FF9F43" />
+              </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.certTitle}>志愿者认证</Text>
                 <Text style={styles.certDesc}>成为认证志愿者，参加更多活动</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#CBD2E3" />
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -158,7 +205,11 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.serviceList}>
             {SERVICE_ITEMS.map((item) => (
-              <TouchableOpacity key={item.label} style={styles.serviceItem}>
+              <TouchableOpacity
+                key={item.label}
+                style={styles.serviceItem}
+                onPress={() => handleServicePress(item.label)}
+              >
                 <View style={styles.serviceIcon}>
                   <Ionicons name={item.icon as any} size={18} color="#7B8AB8" />
                 </View>
@@ -289,17 +340,27 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1F2A44',
   },
-  certificationCard: {
+  certificationList: {
     backgroundColor: '#fff',
     borderRadius: 18,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
+    paddingLeft: 14,
   },
   certificationItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    paddingVertical: 16,
+    paddingRight: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#EFF2F7',
+  },
+  certIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EEF3FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   certTitle: {
     fontSize: 15,
@@ -309,10 +370,6 @@ const styles = StyleSheet.create({
   certDesc: {
     fontSize: 12,
     color: '#4B5675',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#EEF1F7',
   },
   serviceList: {
     backgroundColor: '#fff',

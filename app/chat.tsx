@@ -37,6 +37,17 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     try {
       const data = await MessageDB.getConversation(user.id, userId, petInfoId);
       setMessages(data);
+
+      // 标记收到的消息为已读
+      const unreadMessages = data.filter(
+        msg => msg.toUserId === user.id && msg.isRead === 0
+      );
+
+      // 异步标记为已读（不阻塞 UI）
+      unreadMessages.forEach(msg => {
+        MessageDB.markAsRead(msg.id).catch(console.error);
+      });
+
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
@@ -83,6 +94,17 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         ]}>
           {item.content}
         </ThemedText>
+
+        {/* 已读/未读状态（仅自己的消息显示） */}
+        {isOwn && (
+          <View style={styles.messageStatus}>
+            <Ionicons
+              name={item.isRead ? 'checkmark-done' : 'checkmark'}
+              size={14}
+              color={item.isRead ? '#4CAF50' : '#999'}
+            />
+          </View>
+        )}
       </View>
     );
   };
@@ -142,6 +164,8 @@ const styles = StyleSheet.create({
     maxWidth: '80%',
     padding: 12,
     borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
   },
   ownMessage: {
     alignSelf: 'flex-end',
@@ -153,12 +177,17 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
+    flex: 1,
   },
   ownMessageText: {
     color: 'white',
   },
   otherMessageText: {
     color: '#333',
+  },
+  messageStatus: {
+    marginLeft: 6,
+    marginBottom: 2,
   },
   inputContainer: {
     flexDirection: 'row',

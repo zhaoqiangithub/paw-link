@@ -1,4 +1,9 @@
-import * as SQLite from 'expo-sqlite';
+// 条件导入SQLite（非Web端）
+let SQLite: any = null;
+if (!(typeof window !== 'undefined' && typeof document !== 'undefined')) {
+  SQLite = require('expo-sqlite');
+  console.log('非Web平台，SQLite已启用');
+}
 
 export interface User {
   id: string;
@@ -144,11 +149,37 @@ export interface SuccessCase {
   isActive: number;
 }
 
+export interface UserBlacklist {
+  id: string;
+  userId: string;
+  blockedUserId: string;
+  reason?: string;
+  createdAt: number;
+}
+
+export interface UserMuteSettings {
+  id: string;
+  userId: string;
+  mutedUserId?: string;
+  muteAllMessages: number;
+  muteAllNotifications: number;
+  startTime?: number;
+  endTime?: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
 let db: SQLite.WebSQLDatabase | null = null;
 let initializing = false;
 
 // 异步初始化数据库
-const initDb = async (): Promise<SQLite.WebSQLDatabase> => {
+const initDb = async (): Promise<SQLite.WebSQLDatabase | null> => {
+  // Web端不支持SQLite
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    console.log('Web平台，跳过数据库初始化');
+    return null;
+  }
+
   if (db) return db;
   if (initializing) {
     // 等待初始化完成
@@ -390,6 +421,33 @@ const createTables = async () => {
         negativeReviews INTEGER NOT NULL DEFAULT 0,
         reportCount INTEGER NOT NULL DEFAULT 0,
         lastUpdatedAt INTEGER NOT NULL
+      );
+    `);
+
+    // 防骚扰功能 - 用户黑名单表
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS user_blacklist (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        blockedUserId TEXT NOT NULL,
+        reason TEXT,
+        createdAt INTEGER NOT NULL,
+        UNIQUE(userId, blockedUserId)
+      );
+    `);
+
+    // 防骚扰功能 - 用户免打扰设置表
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS user_mute_settings (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        mutedUserId TEXT,
+        muteAllMessages INTEGER NOT NULL DEFAULT 0,
+        muteAllNotifications INTEGER NOT NULL DEFAULT 0,
+        startTime INTEGER,
+        endTime INTEGER,
+        createdAt INTEGER NOT NULL,
+        updatedAt INTEGER NOT NULL
       );
     `);
 
@@ -1547,6 +1605,262 @@ export const CreditScoreDB = {
   }
 };
 
+// 防骚扰功能 - 黑名单操作
+export const BlacklistDB = {
+  // 添加到黑名单
+  add: async (userId: string, blockedUserId: string, reason?: string): Promise<void> => {
+    try {
+      const dbInstance = await initDb();
+      const id = `blacklist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      const stmt = await dbInstance.prepareAsync(
+        'INSERT INTO user_blacklist (id, userId, blockedUserId, reason, createdAt) VALUES (?, ?, ?, ?, ?)'
+      );
+      try {
+        await stmt.executeAsync([id, userId, blockedUserId, reason, Date.now()]);
+        console.log('添加到黑名单成功');
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('添加到黑名单失败:', error);
+      throw error;
+    }
+  },
+
+  // 从黑名单移除
+  remove: async (userId: string, blockedUserId: string): Promise<void> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'DELETE FROM user_blacklist WHERE userId = ? AND blockedUserId = ?'
+      );
+      try {
+        await stmt.executeAsync([userId, blockedUserId]);
+        console.log('从黑名单移除成功');
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('从黑名单移除失败:', error);
+      throw error;
+    }
+  },
+
+  // 获取黑名单列表
+  getList: async (userId: string): Promise<UserBlacklist[]> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM user_blacklist WHERE userId = ? ORDER BY createdAt DESC'
+      );
+      try {
+        const result = await stmt.executeAsync([userId]);
+        return await result.getAllAsync() as UserBlacklist[];
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('获取黑名单失败:', error);
+      return [];
+    }
+  },
+
+  // 检查是否在黑名单中
+  isBlocked: async (userId: string, blockedUserId: string): Promise<boolean> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM user_blacklist WHERE userId = ? AND blockedUserId = ? LIMIT 1'
+      );
+      try {
+        const result = await stmt.executeAsync([userId, blockedUserId]);
+        const rows = await result.getAllAsync();
+        return rows.length > 0;
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('检查黑名单失败:', error);
+      return false;
+    }
+  }
+};
+
+// 防骚扰功能 - 免打扰设置操作
+export const MuteSettingsDB = {
+  // 创建免打扰设置
+  create: async (userId: string, settings: {
+    mutedUserId?: string;
+    muteAllMessages?: boolean;
+    muteAllNotifications?: boolean;
+    startTime?: number;
+    endTime?: number;
+  }): Promise<string> => {
+    try {
+      const dbInstance = await initDb();
+      const id = `mute_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const now = Date.now();
+
+      const stmt = await dbInstance.prepareAsync(`
+        INSERT INTO user_mute_settings (
+          id, userId, mutedUserId, muteAllMessages, muteAllNotifications,
+          startTime, endTime, createdAt, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      try {
+        await stmt.executeAsync([
+          id,
+          userId,
+          settings.mutedUserId || null,
+          settings.muteAllMessages ? 1 : 0,
+          settings.muteAllNotifications ? 1 : 0,
+          settings.startTime || null,
+          settings.endTime || null,
+          now,
+          now
+        ]);
+        console.log('免打扰设置创建成功');
+        return id;
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('免打扰设置创建失败:', error);
+      throw error;
+    }
+  },
+
+  // 更新免打扰设置
+  update: async (muteId: string, userId: string, settings: {
+    mutedUserId?: string;
+    muteAllMessages?: boolean;
+    muteAllNotifications?: boolean;
+    startTime?: number;
+    endTime?: number;
+  }): Promise<void> => {
+    try {
+      const dbInstance = await initDb();
+      const now = Date.now();
+
+      const stmt = await dbInstance.prepareAsync(`
+        UPDATE user_mute_settings SET
+          mutedUserId = ?,
+          muteAllMessages = ?,
+          muteAllNotifications = ?,
+          startTime = ?,
+          endTime = ?,
+          updatedAt = ?
+        WHERE id = ? AND userId = ?
+      `);
+      try {
+        await stmt.executeAsync([
+          settings.mutedUserId || null,
+          settings.muteAllMessages ? 1 : 0,
+          settings.muteAllNotifications ? 1 : 0,
+          settings.startTime || null,
+          settings.endTime || null,
+          now,
+          muteId,
+          userId
+        ]);
+        console.log('免打扰设置更新成功');
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('免打扰设置更新失败:', error);
+      throw error;
+    }
+  },
+
+  // 删除免打扰设置
+  remove: async (muteId: string, userId: string): Promise<void> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'DELETE FROM user_mute_settings WHERE id = ? AND userId = ?'
+      );
+      try {
+        await stmt.executeAsync([muteId, userId]);
+        console.log('免打扰设置删除成功');
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('免打扰设置删除失败:', error);
+      throw error;
+    }
+  },
+
+  // 获取免打扰设置列表
+  getList: async (userId: string): Promise<UserMuteSettings[]> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM user_mute_settings WHERE userId = ? ORDER BY createdAt DESC'
+      );
+      try {
+        const result = await stmt.executeAsync([userId]);
+        const rows = await result.getAllAsync();
+
+        return rows.map(row => ({
+          ...row,
+          muteAllMessages: row.muteAllMessages === 1,
+          muteAllNotifications: row.muteAllNotifications === 1
+        })) as UserMuteSettings[];
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('获取免打扰设置失败:', error);
+      return [];
+    }
+  },
+
+  // 检查是否免打扰
+  isMuted: async (userId: string, fromUserId?: string): Promise<boolean> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(
+        'SELECT * FROM user_mute_settings WHERE userId = ?'
+      );
+      try {
+        const result = await stmt.executeAsync([userId]);
+        const rows = await result.getAllAsync();
+
+        const now = Date.now();
+
+        for (const row of rows) {
+          // 检查全部免打扰
+          if (row.muteAllMessages === 1) {
+            return true;
+          }
+
+          // 检查特定用户免打扰
+          if (fromUserId && row.mutedUserId === fromUserId) {
+            return true;
+          }
+
+          // 检查免打扰时间段
+          if (row.startTime && row.endTime) {
+            if (now >= row.startTime && now <= row.endTime) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('检查免打扰失败:', error);
+      return false;
+    }
+  }
+};
+
 export default {
   initDatabase,
   UserDB,
@@ -1562,5 +1876,7 @@ export default {
   StoryCommentDB,
   SuccessCaseDB,
   VerificationDB,
-  CreditScoreDB
+  CreditScoreDB,
+  BlacklistDB,
+  MuteSettingsDB
 };
