@@ -61,7 +61,17 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <LinearGradient colors={Gradients.blue} style={[styles.hero, { paddingTop: insets.top + 8 }]}>
+      {/* 地图托底 - 全屏显示 */}
+      <View style={styles.mapContainer}>
+        <MapComponent
+          onMarkerPress={(petInfo) =>
+            router.push({ pathname: '/pet-detail', params: { id: petInfo.id } })
+          }
+        />
+      </View>
+
+      {/* 顶部导航栏 */}
+      <LinearGradient colors={Gradients.blue} style={[styles.topNav, { paddingTop: insets.top + 8 }]}>
         <View style={styles.heroHeader}>
           <View>
             <Text style={styles.brand}>PawLink</Text>
@@ -117,81 +127,78 @@ export default function HomeScreen() {
         </View>
       </LinearGradient>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.mapSection}>
-          <MapComponent
-            onMarkerPress={(petInfo) =>
-              router.push({ pathname: '/pet-detail', params: { id: petInfo.id } })
-            }
-          />
-          <View style={styles.mapControls}>
-            <TouchableOpacity style={styles.controlButton}>
-              <Ionicons name="add" size={18} color="#1F2A44" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.controlButton}>
-              <Ionicons name="remove" size={18} color="#1F2A44" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.controlButton}>
-              <Ionicons name="locate" size={18} color="#1F2A44" />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.legendRow}>
-            <LegendDot color="#FF6B6B" label="紧急救助" />
-            <LegendDot color="#4ECDC4" label="待领养" />
-            <LegendDot color="#2ECC71" label="已救助" />
-          </View>
-          <View style={styles.mapLocationChip}>
-            <Ionicons name="location" size={16} color="#2C6CFF" />
-            <Text style={styles.mapLocationText}>
-              我在 {location?.address || '正在定位'}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.petCarousel}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.petCarouselContent}
-          >
-            {petInfos.slice(0, 5).map((pet) => (
-              <TouchableOpacity
-                key={pet.id}
-                style={styles.petCard}
-                onPress={() => router.push({ pathname: '/pet-detail', params: { id: pet.id } })}
-              >
-                <View style={styles.petImageWrapper}>
-                  <Image
-                    source={{ uri: pet.images?.[0] || 'https://placekitten.com/400/300' }}
-                    style={styles.petImage}
-                    contentFit="cover"
-                  />
-                  <View style={[styles.petBadge, getBadgeStyle(pet.status)]}>
-                    <Text style={styles.petBadgeText}>{getStatusLabel(pet.status)}</Text>
-                  </View>
+      {/* 宠物信息卡片 - 悬浮在地图上方 */}
+      <View style={styles.petCarouselContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.petCarouselContent}
+        >
+          {petInfos.slice(0, 10).map((pet) => (
+            <TouchableOpacity
+              key={pet.id}
+              style={styles.petCard}
+              onPress={() => router.push({ pathname: '/pet-detail', params: { id: pet.id } })}
+            >
+              <View style={styles.petImageWrapper}>
+                <Image
+                  source={{ uri: pet.images?.[0] || 'https://placekitten.com/400/300' }}
+                  style={styles.petImage}
+                  contentFit="cover"
+                />
+                <View style={[styles.petBadge, getBadgeStyle(pet.status)]}>
+                  <Text style={styles.petBadgeText}>{getStatusLabel(pet.status)}</Text>
                 </View>
-                <Text style={styles.petTitle} numberOfLines={1}>
-                  {pet.title}
-                </Text>
-                <Text style={styles.petMeta} numberOfLines={1}>
-                  {pet.description}
-                </Text>
-                <Text style={styles.petMetaHint}>
-                  {pet.address || '未知地点'} · {getTimeLabel(pet.createdAt)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+              </View>
+              <Text style={styles.petTitle} numberOfLines={1}>
+                {pet.title}
+              </Text>
+              <Text style={styles.petMeta} numberOfLines={1}>
+                {pet.description}
+              </Text>
+              <Text style={styles.petMetaHint}>
+                {pet.address || '未知地点'} · {getTimeLabel(pet.createdAt)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
-        {locationError && (
-          <View style={styles.errorBanner}>
-            <Ionicons name="warning-outline" size={16} color="#FF6B6B" />
-            <Text style={styles.errorText}>{locationError}</Text>
-          </View>
-        )}
-      </ScrollView>
+      {/* 地图控制按钮 */}
+      <View style={styles.mapControls}>
+        <TouchableOpacity style={styles.controlButton}>
+          <Ionicons name="add" size={18} color="#1F2A44" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.controlButton}>
+          <Ionicons name="remove" size={18} color="#1F2A44" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.controlButton}>
+          <Ionicons name="locate" size={18} color="#1F2A44" />
+        </TouchableOpacity>
+      </View>
+
+      {/* 图例 */}
+      <View style={styles.legendRow}>
+        <LegendDot color="#FF6B6B" label="紧急救助" />
+        <LegendDot color="#4ECDC4" label="待领养" />
+        <LegendDot color="#2ECC71" label="已救助" />
+      </View>
+
+      {/* 定位信息 */}
+      <View style={styles.mapLocationChip}>
+        <Ionicons name="location" size={16} color="#2C6CFF" />
+        <Text style={styles.mapLocationText}>
+          我在 {location?.address || '正在定位'}
+        </Text>
+      </View>
+
+      {/* 错误提示 */}
+      {locationError && (
+        <View style={styles.errorBanner}>
+          <Ionicons name="warning-outline" size={16} color="#FF6B6B" />
+          <Text style={styles.errorText}>{locationError}</Text>
+        </View>
+      )}
     </ThemedView>
   );
 }
@@ -244,8 +251,8 @@ const styles = StyleSheet.create({
   hero: {
     paddingHorizontal: 16,
     paddingBottom: 20,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   heroHeader: {
     flexDirection: 'row',
@@ -340,23 +347,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  content: {
-    paddingHorizontal: 16,
-    paddingBottom: 100,
-    gap: 12,
-    marginTop: -8,
+  mapContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    top: 0,
+    zIndex: 1,
   },
-  mapSection: {
-    height: 400,
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: '#E5E7EB',
+  topNav: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    zIndex: 10,
   },
   mapControls: {
     position: 'absolute',
     right: 16,
-    top: 16,
+    top: 200,
     gap: 8,
+    zIndex: 10,
   },
   controlButton: {
     width: 40,
@@ -373,13 +388,14 @@ const styles = StyleSheet.create({
   legendRow: {
     position: 'absolute',
     left: 16,
-    bottom: 16,
+    bottom: 100,
     flexDirection: 'row',
     gap: 12,
     backgroundColor: 'rgba(255,255,255,0.95)',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
+    zIndex: 10,
   },
   legendItem: {
     flexDirection: 'row',
@@ -399,7 +415,7 @@ const styles = StyleSheet.create({
   mapLocationChip: {
     position: 'absolute',
     left: 16,
-    bottom: 60,
+    bottom: 140,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -411,19 +427,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+    zIndex: 10,
   },
   mapLocationText: {
     color: '#374151',
     fontSize: 13,
     fontWeight: '600',
   },
-  petCarousel: {
-    marginTop: 0,
+  petCarouselContainer: {
+    position: 'absolute',
+    top: 250,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
   petCarouselContent: {
     gap: 12,
-    paddingRight: 16,
-    paddingTop: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 20,
   },
   petCard: {
     width: 280,

@@ -21,8 +21,10 @@ import { ThemedView } from '@/components/themed-view';
 import { useApp } from '@/contexts/AppContext';
 import { useImagePicker } from '@/hooks/use-image-picker';
 import { useLocation } from '@/hooks/use-location';
+import { useLocationContext } from '@/contexts/LocationContext';
 import { PetInfoDB } from '@/lib/database';
 import { AIModerationService } from '@/lib/services/ai-moderation';
+import { DraftStorage } from '@/lib/draft-storage';
 import { Gradients } from '@/constants/theme';
 
 const PET_TYPES = [
@@ -83,6 +85,7 @@ export default function PublishScreen() {
   const router = useRouter();
   const { user } = useApp();
   const { location, getCurrentLocation } = useLocation();
+  const { selectedLocation, selectLocation, clearLocation } = useLocationContext();
   const {
     images,
     loading: imageLoading,
@@ -107,6 +110,8 @@ export default function PublishScreen() {
 
   const [submitting, setSubmitting] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0); // 0: 发布类型, 1: 基本信息, 2: 选择位置, 3: 完成
+  const [hasDraft, setHasDraft] = useState(false);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
 
   // 创建refs
   const scrollViewRef = useRef<ScrollView>(null);
@@ -120,7 +125,7 @@ export default function PublishScreen() {
     if (currentStepIndex === 0) return '下一步 · 基本信息';
     if (currentStepIndex === 1) return '下一步 · 选择位置';
     if (currentStepIndex === 2) {
-      return location ? '发布信息' : '选择位置';
+      return selectedLocation ? '发布信息' : '选择位置';
     }
     return '下一步';
   };
@@ -150,7 +155,7 @@ export default function PublishScreen() {
   useEffect(() => {
     const unsubscribe = router.addListener?.('focus', () => {
       // 当从位置选择页面返回时，如果已有位置，则进入"完成"步骤
-      if (location) {
+      if (selectedLocation) {
         setCurrentStepIndex(3); // 完成步骤
       }
     });
@@ -158,7 +163,7 @@ export default function PublishScreen() {
     return () => {
       unsubscribe?.();
     };
-  }, [location]);
+  }, [selectedLocation]);
 
   const genderLabel = useMemo(
     () => GENDER_OPTIONS.find((g) => g.value === formData.gender)?.label ?? '',
@@ -178,7 +183,7 @@ export default function PublishScreen() {
       Alert.alert('错误', '用户未登录');
       return;
     }
-    if (!location) {
+    if (!selectedLocation) {
       Alert.alert('提示', '请先完成定位，方便附近的志愿者找到它');
       return;
     }
@@ -205,9 +210,9 @@ export default function PublishScreen() {
         description,
         title: formData.title.trim(),
         location: {
-          latitude: location.latitude,
-          longitude: location.longitude,
-          address: location.address || '未知地址'
+          latitude: selectedLocation.latitude,
+          longitude: selectedLocation.longitude,
+          address: selectedLocation.address || '未知地址'
         },
         userId: user.id
       });
@@ -231,9 +236,9 @@ export default function PublishScreen() {
         title: formData.title.trim(),
         description,
         images: imageUris,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        address: location.address || '未知地址',
+        latitude: selectedLocation.latitude,
+        longitude: selectedLocation.longitude,
+        address: selectedLocation.address || '未知地址',
         contactPhone: formData.contactPhone.trim() || undefined,
         contactWechat: formData.contactWechat.trim() || undefined,
         contactQQ: formData.contactQQ.trim() || undefined,
@@ -243,8 +248,9 @@ export default function PublishScreen() {
       Alert.alert('提交成功', '信息已发布，感谢您为它发声！', [
         {
           text: '好的',
-          onPress: () => {
+          onPress: async () => {
             clearImages();
+            clearLocation();
             setFormData({
               title: '',
               description: '',
@@ -257,6 +263,10 @@ export default function PublishScreen() {
               contactWechat: '',
               contactQQ: '',
             });
+            // 清除草稿
+            await DraftStorage.clearDraft();
+            setHasDraft(false);
+            router.back();
           },
         },
       ]);
@@ -279,7 +289,7 @@ export default function PublishScreen() {
       router.push('/select-location');
     } else if (currentStepIndex === 2) {
       // 如果已有位置，直接提交
-      if (location) {
+      if (selectedLocation) {
         handleSubmit();
       } else {
         router.push('/select-location');
@@ -291,9 +301,72 @@ export default function PublishScreen() {
     router.back();
   };
 
-  const handleSaveDraft = () => {
-    Alert.alert('提示', '草稿功能即将上线，敬请期待。');
+  const handleSaveDraft = async () => {
+    try {
+      await DraftStorage.saveDraft({
+        formData,
+        images,
+      });
+      setHasDraft(true);
+      Alert.alert('提示', '草稿已保存');
+    } catch (error) {
+      Alert.alert('错误', '保存草稿失败');
+    }
   };
+
+  const handleLoadDraft = async () => {
+    try {
+      setIsLoadingDraft(true);
+      const draft = await DraftStorage.loadDraft();
+      if (draft) {
+        Alert.alert(
+          '发现草稿',
+          `是否恢复之前保存的草稿？（${new Date(draft.timestamp).toLocaleString()}）`,
+          [
+            { text: '不恢复', style: 'cancel', onPress: () => {} },
+            {
+              text: '恢复',
+              onPress: () => {
+                setFormData(draft.formData);
+                clearImages();
+                draft.images.forEach(img => {
+                  // Note: Images need to be re-selected as they are temporary URIs
+                  // This is a limitation of AsyncStorage for file URIs
+                });
+                setHasDraft(true);
+                Alert.alert('提示', '草稿已恢复，请重新选择图片');
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert('提示', '没有找到草稿');
+      }
+    } catch (error) {
+      Alert.alert('错误', '加载草稿失败');
+    } finally {
+      setIsLoadingDraft(false);
+    }
+  };
+
+  const handleClearDraft = async () => {
+    try {
+      await DraftStorage.clearDraft();
+      setHasDraft(false);
+      Alert.alert('提示', '草稿已清除');
+    } catch (error) {
+      Alert.alert('错误', '清除草稿失败');
+    }
+  };
+
+  // 检查是否有草稿
+  useEffect(() => {
+    const checkDraft = async () => {
+      const has = await DraftStorage.hasDraft();
+      setHasDraft(has);
+    };
+    checkDraft();
+  }, []);
 
   const renderImagePicker = () => (
     <View style={styles.sectionCard}>
@@ -337,9 +410,10 @@ export default function PublishScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <>
       <StatusBar style="light" />
-      <KeyboardAvoidingView
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
@@ -352,7 +426,7 @@ export default function PublishScreen() {
               </TouchableOpacity>
               <Text style={styles.headerTitle}>发布救助信息</Text>
               <TouchableOpacity style={styles.draftButton} onPress={handleSaveDraft}>
-                <Text style={styles.draftText}>保存草稿</Text>
+                <Text style={styles.draftText}>{hasDraft ? '更新草稿' : '保存草稿'}</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.progressInfo}>
@@ -366,6 +440,20 @@ export default function PublishScreen() {
             </View>
           </LinearGradient>
         </View>
+
+        {/* 草稿提示条 */}
+        {hasDraft && !isLoadingDraft && (
+          <View style={styles.draftBanner}>
+            <Ionicons name="document-text-outline" size={16} color="#3A7AFE" />
+            <Text style={styles.draftBannerText}>您有未发布的草稿</Text>
+            <TouchableOpacity onPress={handleLoadDraft}>
+              <Text style={styles.draftBannerAction}>恢复</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleClearDraft}>
+              <Text style={styles.draftBannerClear}>清除</Text>
+            </TouchableOpacity>
+          </View>
+        )}
         <ScrollView
           ref={scrollViewRef}
           contentContainerStyle={styles.scrollContent}
@@ -530,6 +618,60 @@ export default function PublishScreen() {
 
             {renderImagePicker()}
 
+            {/* 位置选择卡片 */}
+            <View style={styles.sectionCard}>
+              <View style={styles.sectionTitleRow}>
+                <View style={styles.sectionIcon}>
+                  <Ionicons name="location-outline" size={16} color="#3A7AFE" />
+                </View>
+                <Text style={styles.sectionTitle}>位置信息 *</Text>
+                {selectedLocation && (
+                  <TouchableOpacity
+                    style={styles.clearLocationButton}
+                    onPress={() => clearLocation()}
+                  >
+                    <Ionicons name="close-circle-outline" size={18} color="#FF6B6B" />
+                  </TouchableOpacity>
+                )}
+              </View>
+              <Text style={styles.sectionDescription}>
+                选择宠物所在位置，方便附近的志愿者找到它
+              </Text>
+
+              {selectedLocation ? (
+                <View style={styles.locationPreview}>
+                  <View style={styles.locationHeader}>
+                    <Ionicons name="location" size={16} color="#4CAF50" />
+                    <Text style={styles.locationPreviewTitle}>已选择位置</Text>
+                  </View>
+                  <Text style={styles.locationPreviewAddress}>
+                    {selectedLocation.address}
+                  </Text>
+                  <Text style={styles.locationPreviewCoords}>
+                    {selectedLocation.longitude.toFixed(4)}, {selectedLocation.latitude.toFixed(4)}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.changeLocationButton}
+                    onPress={() => router.push('/select-location')}
+                  >
+                    <Text style={styles.changeLocationButtonText}>重新选择</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.selectLocationButton}
+                  onPress={() => router.push('/select-location')}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.selectLocationIcon}>
+                    <Ionicons name="map-outline" size={24} color="#3A7AFE" />
+                  </View>
+                  <Text style={styles.selectLocationButtonText}>点击选择位置</Text>
+                  <Ionicons name="chevron-forward" size={20} color="#C4CBD9" />
+                </TouchableOpacity>
+              )}
+            </View>
+
             <View style={styles.sectionCard}>
               <View style={styles.sectionTitleRow}>
                 <View style={styles.sectionIcon}>
@@ -580,6 +722,7 @@ export default function PublishScreen() {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </>
   );
 }
 
@@ -639,6 +782,36 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 13,
+  },
+  draftBanner: {
+    backgroundColor: '#EEF3FF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0ECFF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  draftBannerText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#3A7AFE',
+    fontWeight: '500',
+  },
+  draftBannerAction: {
+    fontSize: 13,
+    color: '#3A7AFE',
+    fontWeight: '600',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  draftBannerClear: {
+    fontSize: 13,
+    color: '#FF6B6B',
+    fontWeight: '600',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   progressInfo: {
     marginBottom: 16,
@@ -964,5 +1137,80 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  // 位置选择相关样式
+  clearLocationButton: {
+    marginLeft: 'auto',
+    padding: 4,
+  },
+  locationPreview: {
+    backgroundColor: '#F0F7FF',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#E0ECFF',
+  },
+  locationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  locationPreviewTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1F2A44',
+  },
+  locationPreviewAddress: {
+    fontSize: 14,
+    color: '#4B5675',
+    marginBottom: 6,
+    lineHeight: 20,
+  },
+  locationPreviewCoords: {
+    fontSize: 12,
+    color: '#8A94A6',
+    marginBottom: 12,
+  },
+  changeLocationButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E0ECFF',
+  },
+  changeLocationButtonText: {
+    fontSize: 12,
+    color: '#3A7AFE',
+    fontWeight: '600',
+  },
+  selectLocationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingVertical: 16,
+    marginTop: 12,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#E2E7F3',
+    borderStyle: 'dashed',
+    backgroundColor: '#FAFBFF',
+  },
+  selectLocationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#EEF3FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectLocationButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3A7AFE',
   },
 });

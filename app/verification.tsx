@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,6 +16,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Gradients } from '@/constants/theme';
 import { useApp } from '@/contexts/AppContext';
 import { VerificationDB } from '@/lib/database';
+import { useImagePicker } from '@/hooks/use-image-picker';
 
 const STEPS = [
   { key: 'identity', label: '身份认证', icon: 'card' },
@@ -141,13 +143,55 @@ function IdentityVerificationStep({ onNext }: { onNext: () => void }) {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleImageUpload = (type: 'front' | 'back') => {
+  const {
+    images,
+    loading: imageLoading,
+    pickMultipleImages,
+    takePhoto,
+    removeImage,
+    clearImages,
+  } = useImagePicker();
+
+  const handleImageUpload = async (type: 'front' | 'back') => {
     Alert.alert(
       '上传身份证',
       '请选择图片来源',
       [
-        { text: '相册', onPress: () => console.log('选择相册', type) },
-        { text: '拍照', onPress: () => console.log('拍照', type) },
+        {
+          text: '相册',
+          onPress: async () => {
+            try {
+              const result = await pickMultipleImages(1);
+              if (result && result.length > 0) {
+                const imageUri = result[0].uri;
+                if (type === 'front') {
+                  setFrontImage(imageUri);
+                } else {
+                  setBackImage(imageUri);
+                }
+              }
+            } catch (error) {
+              Alert.alert('错误', '选择图片失败');
+            }
+          },
+        },
+        {
+          text: '拍照',
+          onPress: async () => {
+            try {
+              const result = await takePhoto();
+              if (result && result.uri) {
+                if (type === 'front') {
+                  setFrontImage(result.uri);
+                } else {
+                  setBackImage(result.uri);
+                }
+              }
+            } catch (error) {
+              Alert.alert('错误', '拍照失败');
+            }
+          },
+        },
         { text: '取消', style: 'cancel' },
       ]
     );
@@ -191,7 +235,9 @@ function IdentityVerificationStep({ onNext }: { onNext: () => void }) {
       <View style={styles.imageUploadContainer}>
         <TouchableOpacity style={styles.imageUploadBox} onPress={() => handleImageUpload('front')}>
           {frontImage ? (
-            <View style={styles.imagePreview} />
+            <View style={styles.imagePreview}>
+              <Image source={{ uri: frontImage }} style={styles.uploadedImage} />
+            </View>
           ) : (
             <>
               <Ionicons name="camera-outline" size={32} color="#CBD2E3" />
@@ -201,7 +247,9 @@ function IdentityVerificationStep({ onNext }: { onNext: () => void }) {
         </TouchableOpacity>
         <TouchableOpacity style={styles.imageUploadBox} onPress={() => handleImageUpload('back')}>
           {backImage ? (
-            <View style={styles.imagePreview} />
+            <View style={styles.imagePreview}>
+              <Image source={{ uri: backImage }} style={styles.uploadedImage} />
+            </View>
           ) : (
             <>
               <Ionicons name="camera-outline" size={32} color="#CBD2E3" />
@@ -574,6 +622,12 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 14,
     backgroundColor: '#E5E9F2',
+    overflow: 'hidden',
+  },
+  uploadedImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
   },
   imageUploadText: {
     fontSize: 13,

@@ -4,7 +4,9 @@
       "WebSearch",
       "WebFetch(domain:www.theshelterpetproject.org)",
       "WebFetch(domain:www.rescueme.org)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "WebFetch(domain:lbs.amap.com)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

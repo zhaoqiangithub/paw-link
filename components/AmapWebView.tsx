@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { getAmapHtmlTemplate } from '../utils/amap-js-bridge';
+import { MAP_STYLES, MapStyleType } from '../constants/amap-config';
+import { getApiKeyForPlatform } from '../config/amap-api-keys';
 
 // 宠物信息接口
 export interface PetInfo {
@@ -18,6 +20,19 @@ export interface LocationInfo {
   longitude: number;
   latitude: number;
   accuracy?: number;
+  address?: string;
+}
+
+// 搜索结果接口
+export interface SearchResult {
+  id: string;
+  name: string;
+  address: string;
+  location: {
+    longitude: number;
+    latitude: number;
+  };
+  distance?: number;
 }
 
 // Props 接口
@@ -25,11 +40,14 @@ export interface AmapWebViewProps {
   center?: { longitude: number; latitude: number };
   zoom?: number;
   pets?: PetInfo[];
+  mapStyle?: MapStyleType;  // 新增：地图样式
   onMapLoaded?: () => void;
   onMarkerClick?: (pet: PetInfo) => void;
   onLocationSuccess?: (location: LocationInfo) => void;
   onLocationError?: (error: { message: string }) => void;
   onMapClick?: (location: { longitude: number; latitude: number }) => void;
+  onSearchResults?: (results: SearchResult[]) => void;
+  onPOISearchResults?: (results: SearchResult[]) => void;
   style?: any;
 }
 
@@ -44,17 +62,21 @@ export const AmapWebView: React.FC<AmapWebViewProps & { webViewRef?: React.RefOb
     center = DEFAULT_CENTER,
     zoom = 15,
     pets = [],
+    mapStyle = 'normal',
     onMapLoaded,
     onMarkerClick,
     onLocationSuccess,
     onLocationError,
     onMapClick,
+    onSearchResults,
+    onPOISearchResults,
     style,
     webViewRef
   } = props;
 
   const internalWebViewRef = useRef<WebView>(null);
-  const [apiKey] = useState<string>('f4f3fe154db5361fad122db55f64178c'); // TODO: 从环境变量或配置获取
+  const actualWebViewRef = webViewRef || internalWebViewRef;
+  const [apiKey] = useState<string>(getApiKeyForPlatform()); // 从配置文件获取
   const [mapLoaded, setMapLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -101,54 +123,102 @@ export const AmapWebView: React.FC<AmapWebViewProps & { webViewRef?: React.RefOb
             onMapClick(data.data);
           }
           break;
+
+        case 'ADDRESS_SEARCH_RESULT':
+          if (onSearchResults && data.data?.results) {
+            onSearchResults(data.data.results);
+          }
+          break;
+
+        case 'POI_SEARCH_RESULT':
+          if (onPOISearchResults && data.data?.results) {
+            onPOISearchResults(data.data.results);
+          }
+          break;
       }
     } catch (error) {
       // Silent error handling
     }
-  }, [pets, onMapLoaded, onMarkerClick, onLocationSuccess, onLocationError, onMapClick]);
+  }, [pets, onMapLoaded, onMarkerClick, onLocationSuccess, onLocationError, onMapClick, onSearchResults, onPOISearchResults]);
 
   // 发送宠物数据到WebView
   const sendPetsToWebView = useCallback((petsData: PetInfo[]) => {
-    if (webViewRef.current) {
+    if (actualWebViewRef.current) {
       const message = {
         type: 'ADD_PETS',
         pets: petsData,
       };
-      webViewRef.current.postMessage(JSON.stringify(message));
+      actualWebViewRef.current.postMessage(JSON.stringify(message));
     }
-  }, []);
+  }, [actualWebViewRef]);
 
   // 获取用户位置
   const getUserLocation = useCallback(() => {
-    if (webViewRef.current) {
+    if (actualWebViewRef.current) {
       const message = {
         type: 'GET_LOCATION',
       };
-      webViewRef.current.postMessage(JSON.stringify(message));
+      actualWebViewRef.current.postMessage(JSON.stringify(message));
     }
-  }, []);
+  }, [actualWebViewRef]);
 
   // 清除所有宠物标记
   const clearPetMarkers = useCallback(() => {
-    if (webViewRef.current) {
+    if (actualWebViewRef.current) {
       const message = {
         type: 'CLEAR_PETS',
       };
-      webViewRef.current.postMessage(JSON.stringify(message));
+      actualWebViewRef.current.postMessage(JSON.stringify(message));
     }
-  }, []);
+  }, [actualWebViewRef]);
 
   // 设置地图中心
-  const setMapCenter = useCallback((longitude: number, latitude: number) => {
-    if (webViewRef.current) {
+  const setMapCenter = useCallback((longitude: number, latitude: number, zoom?: number) => {
+    if (actualWebViewRef.current) {
       const message = {
         type: 'CENTER_MAP',
         longitude,
         latitude,
+        zoom,
       };
-      webViewRef.current.postMessage(JSON.stringify(message));
+      actualWebViewRef.current.postMessage(JSON.stringify(message));
     }
-  }, []);
+  }, [actualWebViewRef]);
+
+  // 切换地图样式
+  const setMapStyle = useCallback((style: MapStyleType) => {
+    if (actualWebViewRef.current) {
+      const message = {
+        type: 'SET_MAP_STYLE',
+        style: MAP_STYLES[style],
+      };
+      actualWebViewRef.current.postMessage(JSON.stringify(message));
+    }
+  }, [actualWebViewRef]);
+
+  // 地址搜索
+  const searchAddress = useCallback((keyword: string) => {
+    if (actualWebViewRef.current && keyword.trim()) {
+      const message = {
+        type: 'ADDRESS_SEARCH',
+        keyword: keyword.trim(),
+      };
+      actualWebViewRef.current.postMessage(JSON.stringify(message));
+    }
+  }, [actualWebViewRef]);
+
+  // POI 搜索
+  const searchPOI = useCallback((keyword: string, longitude?: number, latitude?: number) => {
+    if (actualWebViewRef.current && keyword.trim()) {
+      const message = {
+        type: 'POI_SEARCH',
+        keyword: keyword.trim(),
+        longitude,
+        latitude,
+      };
+      actualWebViewRef.current.postMessage(JSON.stringify(message));
+    }
+  }, [actualWebViewRef]);
 
   // 当宠物数据变化时，更新WebView
   useEffect(() => {
@@ -193,13 +263,23 @@ export const AmapWebView: React.FC<AmapWebViewProps & { webViewRef?: React.RefOb
   return (
     <View style={[styles.container, style]}>
       <WebView
-        ref={webViewRef ? webViewRef : internalWebViewRef}
+        ref={actualWebViewRef}
         source={{
-          html: getAmapHtmlTemplate(apiKey, center, zoom),
+          html: getAmapHtmlTemplate(apiKey, center, zoom, '2.0', MAP_STYLES[mapStyle]),
         }}
         style={styles.webview}
         javaScriptEnabled={true}
         domStorageEnabled={true}
+        cacheEnabled={true}
+        cacheMode="LOAD_DEFAULT"
+        // 性能优化
+        androidHardwareAccelerationDisabled={false}  // 启用硬件加速
+        androidLayerType="hardware"
+        mixedContentMode="always"
+        originWhitelist={['*']}
+        allowsInlineMediaPlayback={true}
+        mediaPlaybackRequiresUserAction={false}
+        // 其他设置
         startInLoadingState={true}
         renderLoading={renderLoading}
         onMessage={handleWebViewMessage}
@@ -207,11 +287,15 @@ export const AmapWebView: React.FC<AmapWebViewProps & { webViewRef?: React.RefOb
           const { nativeEvent } = syntheticEvent;
           setError(`WebView加载失败: ${nativeEvent.description || '未知错误'}`);
         }}
+        onLoadProgress={({ nativeEvent }) => {
+          // 可选：显示加载进度
+        }}
       />
       {/* 定位按钮 */}
       <TouchableOpacity
         style={styles.locationButton}
         onPress={() => getUserLocation()}
+        activeOpacity={0.8}
       >
         <Text style={styles.locationButtonText}>📍</Text>
       </TouchableOpacity>
@@ -226,6 +310,7 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   loadingContainer: {
     position: 'absolute',
@@ -307,8 +392,20 @@ export const AmapWebViewMethods = {
   clearPetMarkers: (ref: React.RefObject<any>) => {
     ref.current?.clearPetMarkers?.();
   },
-  setMapCenter: (ref: React.RefObject<any>, lng: number, lat: number) => {
-    ref.current?.setMapCenter?.(lng, lat);
+  setMapCenter: (ref: React.RefObject<any>, lng: number, lat: number, zoom?: number) => {
+    ref.current?.setMapCenter?.(lng, lat, zoom);
+  },
+  setMapStyle: (ref: React.RefObject<any>, style: MapStyleType) => {
+    ref.current?.setMapStyle?.(style);
+  },
+  sendPetsToWebView: (ref: React.RefObject<any>, pets: PetInfo[]) => {
+    ref.current?.sendPetsToWebView?.(pets);
+  },
+  searchAddress: (ref: React.RefObject<any>, keyword: string) => {
+    ref.current?.searchAddress?.(keyword);
+  },
+  searchPOI: (ref: React.RefObject<any>, keyword: string, lng?: number, lat?: number) => {
+    ref.current?.searchPOI?.(keyword, lng, lat);
   },
 };
 

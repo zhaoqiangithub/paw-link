@@ -7,6 +7,7 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AppProvider, useApp } from '@/contexts/AppContext';
 import { MessageProvider } from '@/contexts/MessageContext';
+import { LocationProvider } from '@/contexts/LocationContext';
 import { Colors } from '@/constants/theme';
 
 export const unstable_settings = {
@@ -41,23 +42,25 @@ function RootLayoutContent() {
   }
 
   return (
-    <MessageProvider>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        <Stack.Screen name="chat" options={{ headerShown: false }} />
-        <Stack.Screen name="publish" options={{ headerShown: false }} />
-        <Stack.Screen name="select-location" options={{ headerShown: false }} />
-        <Stack.Screen name="verification" options={{ headerShown: false }} />
-        <Stack.Screen name="my-posts" options={{ headerShown: false }} />
-        <Stack.Screen name="my-adoptions" options={{ headerShown: false }} />
-        <Stack.Screen name="my-favorites" options={{ headerShown: false }} />
-        <Stack.Screen name="volunteer-activities" options={{ headerShown: false }} />
-        <Stack.Screen name="community" options={{ headerShown: false }} />
-        <Stack.Screen name="volunteer" options={{ headerShown: false }} />
-        <Stack.Screen name="pet-detail" options={{ headerShown: false }} />
-      </Stack>
-    </MessageProvider>
+    <LocationProvider>
+      <MessageProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+          <Stack.Screen name="chat" options={{ headerShown: false }} />
+          <Stack.Screen name="publish" options={{ headerShown: false }} />
+          <Stack.Screen name="select-location" options={{ headerShown: false }} />
+          <Stack.Screen name="verification" options={{ headerShown: false }} />
+          <Stack.Screen name="my-posts" options={{ headerShown: false }} />
+          <Stack.Screen name="my-adoptions" options={{ headerShown: false }} />
+          <Stack.Screen name="my-favorites" options={{ headerShown: false }} />
+          <Stack.Screen name="volunteer-activities" options={{ headerShown: false }} />
+          <Stack.Screen name="community" options={{ headerShown: false }} />
+          <Stack.Screen name="volunteer" options={{ headerShown: false }} />
+          <Stack.Screen name="pet-detail" options={{ headerShown: false }} />
+        </Stack>
+      </MessageProvider>
+    </LocationProvider>
   );
 }
 
