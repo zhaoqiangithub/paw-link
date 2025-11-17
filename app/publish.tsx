@@ -13,6 +13,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 
@@ -21,6 +22,7 @@ import { useApp } from '@/contexts/AppContext';
 import { useImagePicker } from '@/hooks/use-image-picker';
 import { useLocation } from '@/hooks/use-location';
 import { PetInfoDB } from '@/lib/database';
+import { Gradients } from '@/constants/theme';
 
 const PET_TYPES = [
   { label: '猫咪', value: 'cat', icon: '🐱' },
@@ -256,7 +258,7 @@ export default function PublishScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.header}>
+          <LinearGradient colors={Gradients.blue} style={styles.header}>
             <View style={styles.topActions}>
               <TouchableOpacity style={styles.navButton} onPress={handleBack}>
                 <Ionicons name="chevron-back" size={22} color="#fff" />
@@ -288,7 +290,7 @@ export default function PublishScreen() {
                 );
               })}
             </View>
-          </View>
+          </LinearGradient>
 
           <ThemedView style={styles.body}>
             <View style={styles.sectionCard}>

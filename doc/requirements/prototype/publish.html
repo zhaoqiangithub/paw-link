@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布救助信息 - PawLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Status Bar -->
+    <div class="h-11 bg-black text-white flex justify-between items-center px-6 text-sm font-semibold">
+        <span>9:41</span>
+        <div class="flex items-center gap-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-4 text-white">
+        <div class="flex items-center justify-between">
+            <button class="w-8 h-8 flex items-center justify-center">
+                <i class="fas fa-chevron-left text-xl"></i>
+            </button>
+            <h1 class="text-lg font-bold">发布救助信息</h1>
+            <button class="text-sm font-semibold">保存草稿</button>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="flex items-center gap-2 mt-4 mb-2">
+            <div class="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+                <div class="w-1/4 h-full bg-white"></div>
+            </div>
+            <span class="text-xs font-medium">1/4</span>
+        </div>
+        <div class="flex justify-between text-xs">
+            <span class="font-semibold">选择类型</span>
+            <span class="text-white/70">基本信息</span>
+            <span class="text-white/70">位置</span>
+            <span class="text-white/70">完成</span>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="p-4 pb-32">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">选择发布类型</h2>
+
+        <!-- Type Selection -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <button class="bg-white rounded-2xl p-6 shadow-sm border-2 border-blue-500">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-ambulance text-red-500 text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 text-center mb-1">紧急救助</h3>
+                <p class="text-xs text-gray-500 text-center">发现受伤或需要帮助的动物</p>
+            </button>
+
+            <button class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:border-blue-500">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-heart text-blue-500 text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 text-center mb-1">待领养</h3>
+                <p class="text-xs text-gray-500 text-center">为流浪动物寻找领养家庭</p>
+            </button>
+
+            <button class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:border-blue-500">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-home text-green-500 text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 text-center mb-1">临时寄养</h3>
+                <p class="text-xs text-gray-500 text-center">为动物提供临时住所</p>
+            </button>
+
+            <button class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:border-blue-500">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-user-md text-purple-500 text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 text-center mb-1">医疗众筹</h3>
+                <p class="text-xs text-gray-500 text-center">为动物筹集医疗费用</p>
+            </button>
+        </div>
+
+        <!-- Form Fields -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm mb-4">
+            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-paw text-blue-500"></i>
+                基本信息
+            </h3>
+
+            <!-- Pet Name -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">宠物昵称 *</label>
+                <input type="text" placeholder="给它起个名字吧" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none">
+            </div>
+
+            <!-- Pet Type -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">动物类型 *</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button class="py-3 border border-gray-200 rounded-xl text-sm font-medium hover:border-blue-500 hover:bg-blue-50">
+                        <i class="fas fa-cat block mb-1 text-gray-600"></i>
+                        猫咪
+                    </button>
+                    <button class="py-3 border border-gray-200 rounded-xl text-sm font-medium hover:border-blue-500 hover:bg-blue-50">
+                        <i class="fas fa-dog block mb-1 text-gray-600"></i>
+                        狗狗
+                    </button>
+                    <button class="py-3 border border-gray-200 rounded-xl text-sm font-medium hover:border-blue-500 hover:bg-blue-50">
+                        <i class="fas fa-paw block mb-1 text-gray-600"></i>
+                        其他
+                    </button>
+                </div>
+            </div>
+
+            <!-- Gender -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">性别</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="py-3 border border-gray-200 rounded-xl text-sm font-medium hover:border-blue-500 hover:bg-blue-50 flex items-center justify-center gap-2">
+                        <i class="fas fa-mars text-blue-500"></i>
+                        雄性
+                    </button>
+                    <button class="py-3 border border-gray-200 rounded-xl text-sm font-medium hover:border-blue-500 hover:bg-blue-50 flex items-center justify-center gap-2">
+                        <i class="fas fa-venus text-pink-500"></i>
+                        雌性
+                    </button>
+                </div>
+            </div>
+
+            <!-- Age -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">年龄阶段</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button class="py-2.5 border border-gray-200 rounded-xl text-sm font-medium hover:border-blue-500 hover:bg-blue-50">
+                        幼年
+                    </button>
+                    <button class="py-2.5 border border-blue-500 bg-blue-50 rounded-xl text-sm font-medium text-blue-600">
+                        成年
+                    </button>
+                    <button class="py-2.5 border border-gray-200 rounded-xl text-sm font-medium hover:border-blue-500 hover:bg-blue-50">
+                        老年
+                    </button>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">详细描述 *</label>
+                <textarea rows="4" placeholder="描述动物的外观、性格、健康状况、发现经过等..." class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none resize-none"></textarea>
+            </div>
+
+            <!-- Health Status -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">健康状况</label>
+                <div class="flex flex-wrap gap-2">
+                    <button class="px-3 py-1.5 bg-red-50 text-red-700 rounded-full text-xs font-medium flex items-center gap-1">
+                        <i class="fas fa-times-circle"></i>
+                        受伤
+                    </button>
+                    <button class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                        生病
+                    </button>
+                    <button class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                        已疫苗
+                    </button>
+                    <button class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                        已绝育
+                    </button>
+                    <button class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                        健康
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Photo Upload -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm">
+            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-camera text-blue-500"></i>
+                照片上传 (最多9张)
+            </h3>
+
+            <div class="grid grid-cols-3 gap-2">
+                <div class="aspect-square bg-gray-100 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-camera text-gray-400 text-xl mb-1"></i>
+                        <p class="text-xs text-gray-500">添加照片</p>
+                    </div>
+                </div>
+                <div class="aspect-square rounded-xl overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=300&h=300&fit=crop" alt="宠物照片" class="w-full h-full object-cover">
+                </div>
+                <div class="aspect-square rounded-xl overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=300&h=300&fit=crop" alt="宠物照片" class="w-full h-full object-cover">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 safe-area-pb">
+        <button class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg">
+            <span>下一步 - 选择位置</span>
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+</body>
+</html>

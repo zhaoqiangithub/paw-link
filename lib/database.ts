@@ -351,6 +351,48 @@ const createTables = async () => {
       );
     `);
 
+    // P0功能 - 身份认证表
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS user_verifications (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        type TEXT NOT NULL,
+        status TEXT NOT NULL,
+        idCardName TEXT,
+        idCardNumber TEXT,
+        idCardFrontImage TEXT,
+        idCardBackImage TEXT,
+        faceImage TEXT,
+        phone TEXT,
+        smsCode TEXT,
+        volunteerCertificate TEXT,
+        volunteerExperience TEXT,
+        organizationLicense TEXT,
+        legalPersonName TEXT,
+        rejectReason TEXT,
+        verifiedAt INTEGER,
+        createdAt INTEGER NOT NULL,
+        updatedAt INTEGER NOT NULL
+      );
+    `);
+
+    // P0功能 - 信用评分表
+    await dbInstance.execAsync(`
+      CREATE TABLE IF NOT EXISTS user_credit_scores (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        score INTEGER NOT NULL DEFAULT 100,
+        level TEXT NOT NULL DEFAULT 'bronze',
+        rescuedCount INTEGER NOT NULL DEFAULT 0,
+        successfulAdoptions INTEGER NOT NULL DEFAULT 0,
+        volunteerHours INTEGER NOT NULL DEFAULT 0,
+        positiveReviews INTEGER NOT NULL DEFAULT 0,
+        negativeReviews INTEGER NOT NULL DEFAULT 0,
+        reportCount INTEGER NOT NULL DEFAULT 0,
+        lastUpdatedAt INTEGER NOT NULL
+      );
+    `);
+
     console.log('All tables created successfully');
   } catch (error) {
     console.error('Error creating tables:', error);
@@ -1304,6 +1346,207 @@ export const SuccessCaseDB = {
   }
 };
 
+// 身份认证相关操作
+export const VerificationDB = {
+  // 提交认证
+  submitVerification: async (userId: string, data: any): Promise<string> => {
+    const id = `verification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = Date.now();
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(`
+        INSERT INTO user_verifications (
+          id, userId, type, status, idCardName, idCardNumber, idCardFrontImage,
+          idCardBackImage, faceImage, phone, volunteerCertificate, volunteerExperience,
+          organizationLicense, legalPersonName, createdAt, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      try {
+        await stmt.executeAsync([
+          id,
+          userId,
+          data.type || 'identity',
+          data.status || 'pending',
+          data.idCardName || null,
+          data.idCardNumber || null,
+          data.idCardFrontImage || null,
+          data.idCardBackImage || null,
+          data.faceImage || null,
+          data.phone || null,
+          data.volunteerCertificate || null,
+          data.volunteerExperience || null,
+          data.organizationLicense || null,
+          data.legalPersonName || null,
+          now,
+          now
+        ]);
+        return id;
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error submitting verification:', error);
+      throw error;
+    }
+  },
+
+  // 获取用户认证状态
+  getVerificationStatus: async (userId: string): Promise<any> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(`
+        SELECT * FROM user_verifications WHERE userId = ? ORDER BY createdAt DESC LIMIT 1
+      `);
+      try {
+        const result = await stmt.executeAsync([userId]);
+        const rows = await result.getAllAsync();
+        return rows[0] || null;
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error getting verification status:', error);
+      return null;
+    }
+  },
+
+  // 更新认证状态
+  updateVerificationStatus: async (id: string, status: string, rejectReason?: string): Promise<void> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(`
+        UPDATE user_verifications SET status = ?, rejectReason = ?, verifiedAt = ?, updatedAt = ? WHERE id = ?
+      `);
+      try {
+        await stmt.executeAsync([status, rejectReason || null, status === 'verified' ? Date.now() : null, Date.now(), id]);
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error updating verification status:', error);
+      throw error;
+    }
+  }
+};
+
+// 信用评分相关操作
+export const CreditScoreDB = {
+  // 获取用户信用分
+  getCreditScore: async (userId: string): Promise<any> => {
+    try {
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(`
+        SELECT * FROM user_credit_scores WHERE userId = ?
+      `);
+      try {
+        const result = await stmt.executeAsync([userId]);
+        const rows = await result.getAllAsync();
+        return rows[0] || null;
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error getting credit score:', error);
+      return null;
+    }
+  },
+
+  // 创建或初始化信用分
+  initializeCreditScore: async (userId: string): Promise<void> => {
+    try {
+      const existing = await CreditScoreDB.getCreditScore(userId);
+      if (existing) return;
+
+      const id = `credit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(`
+        INSERT INTO user_credit_scores (id, userId, lastUpdatedAt) VALUES (?, ?, ?)
+      `);
+      try {
+        await stmt.executeAsync([id, userId, Date.now()]);
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error initializing credit score:', error);
+      throw error;
+    }
+  },
+
+  // 更新信用分
+  updateCreditScore: async (
+    userId: string,
+    updates: {
+      rescuedCount?: number;
+      successfulAdoptions?: number;
+      volunteerHours?: number;
+      positiveReviews?: number;
+      negativeReviews?: number;
+      reportCount?: number;
+    }
+  ): Promise<void> => {
+    try {
+      const current = await CreditScoreDB.getCreditScore(userId);
+      if (!current) {
+        await CreditScoreDB.initializeCreditScore(userId);
+      }
+
+      const newRescuedCount = updates.rescuedCount !== undefined ? updates.rescuedCount : current?.rescuedCount || 0;
+      const newAdoptions = updates.successfulAdoptions !== undefined ? updates.successfulAdoptions : current?.successfulAdoptions || 0;
+      const newVolunteerHours = updates.volunteerHours !== undefined ? updates.volunteerHours : current?.volunteerHours || 0;
+      const newPositiveReviews = updates.positiveReviews !== undefined ? updates.positiveReviews : current?.positiveReviews || 0;
+      const newNegativeReviews = updates.negativeReviews !== undefined ? updates.negativeReviews : current?.negativeReviews || 0;
+      const newReportCount = updates.reportCount !== undefined ? updates.reportCount : current?.reportCount || 0;
+
+      // 计算信用分 (基础100分 + 各种加分减分)
+      let score = 100;
+      score += Math.min(newRescuedCount * 2, 20); // 最多加20分
+      score += Math.min(newAdoptions * 3, 30); // 最多加30分
+      score += Math.min(newVolunteerHours * 0.5, 25); // 最多加25分
+      score += Math.min(newPositiveReviews * 1, 15); // 最多加15分
+      score -= newNegativeReviews * 3; // 每次减3分
+      score -= newReportCount * 5; // 每次减5分
+      score = Math.max(0, Math.min(200, score)); // 限制在0-200分
+
+      // 确定等级
+      let level = 'bronze';
+      if (score >= 150) level = 'platinum';
+      else if (score >= 120) level = 'gold';
+      else if (score >= 100) level = 'silver';
+      else if (score >= 80) level = 'bronze';
+      else level = 'warning';
+
+      const dbInstance = await initDb();
+      const stmt = await dbInstance.prepareAsync(`
+        UPDATE user_credit_scores SET
+          score = ?, level = ?, rescuedCount = ?, successfulAdoptions = ?,
+          volunteerHours = ?, positiveReviews = ?, negativeReviews = ?,
+          reportCount = ?, lastUpdatedAt = ?
+        WHERE userId = ?
+      `);
+      try {
+        await stmt.executeAsync([
+          score,
+          level,
+          newRescuedCount,
+          newAdoptions,
+          newVolunteerHours,
+          newPositiveReviews,
+          newNegativeReviews,
+          newReportCount,
+          Date.now(),
+          userId
+        ]);
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      console.error('Error updating credit score:', error);
+      throw error;
+    }
+  }
+};
+
 export default {
   initDatabase,
   UserDB,
@@ -1317,5 +1560,7 @@ export default {
   StoryDB,
   StoryLikeDB,
   StoryCommentDB,
-  SuccessCaseDB
+  SuccessCaseDB,
+  VerificationDB,
+  CreditScoreDB
 };

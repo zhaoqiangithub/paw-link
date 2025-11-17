@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宠物详情 - PawLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Status Bar -->
+    <div class="h-11 bg-black text-white flex justify-between items-center px-6 text-sm font-semibold">
+        <span>9:41</span>
+        <div class="flex items-center gap-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- Image Carousel -->
+    <div class="relative">
+        <div class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+            <div class="w-full flex-shrink-0 relative">
+                <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=800&h=800&fit=crop" alt="橘子" class="w-full aspect-square object-cover">
+            </div>
+            <div class="w-full flex-shrink-0 relative">
+                <img src="https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=800&h=800&fit=crop" alt="橘子" class="w-full aspect-square object-cover">
+            </div>
+            <div class="w-full flex-shrink-0 relative">
+                <img src="https://images.unsplash.com/photo-1566843972148-c8d7e2b38f89?w=800&h=800&fit=crop" alt="橘子" class="w-full aspect-square object-cover">
+            </div>
+        </div>
+
+        <!-- Header Buttons -->
+        <div class="absolute top-4 left-0 right-0 px-4 flex justify-between">
+            <button class="w-10 h-10 bg-black/30 rounded-full flex items-center justify-center">
+                <i class="fas fa-chevron-left text-white"></i>
+            </button>
+            <div class="flex gap-2">
+                <button class="w-10 h-10 bg-black/30 rounded-full flex items-center justify-center">
+                    <i class="fas fa-heart-o text-white"></i>
+                </button>
+                <button class="w-10 h-10 bg-black/30 rounded-full flex items-center justify-center">
+                    <i class="fas fa-share-alt text-white"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Image Indicator -->
+        <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+            <div class="w-2 h-2 bg-white rounded-full"></div>
+            <div class="w-2 h-2 bg-white/50 rounded-full"></div>
+            <div class="w-2 h-2 bg-white/50 rounded-full"></div>
+        </div>
+
+        <!-- Status Badge -->
+        <div class="absolute top-20 left-4">
+            <span class="bg-red-500 text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2">
+                <i class="fas fa-ambulance"></i>
+                紧急救助
+            </span>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="bg-white rounded-t-3xl -mt-6 relative z-10 p-4 pb-32">
+        <!-- Header Info -->
+        <div class="mb-6">
+            <div class="flex items-start justify-between mb-3">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-1">橘子</h1>
+                    <p class="text-sm text-gray-500 flex items-center gap-2">
+                        <i class="fas fa-map-marker-alt"></i>
+                        北京市朝阳区三里屯街道 · 距您300m
+                    </p>
+                </div>
+                <span class="text-xs text-gray-500">发布于2小时前</span>
+            </div>
+
+            <div class="flex items-center gap-2 mb-4">
+                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">雌性</span>
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">成年</span>
+                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">橘猫</span>
+                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">需要帮助</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-1">
+                    <i class="fas fa-eye text-gray-400"></i>
+                    <span class="text-sm text-gray-600">被浏览 128 次</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <i class="fas fa-heart text-gray-400"></i>
+                    <span class="text-sm text-gray-600">45 人关注</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rescuer Info -->
+        <div class="bg-gray-50 rounded-2xl p-4 mb-4">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">救助者信息</h3>
+            <div class="flex items-center gap-3 mb-3">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop" alt="王先生" class="w-12 h-12 rounded-full object-cover">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h4 class="font-bold text-gray-900">王先生</h4>
+                        <div class="flex items-center gap-1">
+                            <i class="fas fa-shield-alt text-blue-500 text-sm"></i>
+                            <span class="text-xs text-blue-600">已认证</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600">爱心志愿者 · 信誉分 98</p>
+                    <div class="flex items-center gap-3 mt-2 text-xs">
+                        <span class="text-gray-600">救助 23 次</span>
+                        <span class="text-gray-600">响应速度很快</span>
+                    </div>
+                </div>
+                <button class="px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-medium">
+                    关注
+                </button>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-4">
+            <h3 class="text-lg font-bold text-gray-900 mb-3">详细描述</h3>
+            <div class="bg-gray-50 rounded-2xl p-4">
+                <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                    今天早上在三里屯地铁站附近发现这只橘猫，当时它的后腿有明显受伤迹象，行动不便。橘子非常亲人，会主动靠近人蹭蹭，看起来曾经是家养宠物。
+                </p>
+                <p class="text-sm text-gray-700 leading-relaxed">
+                    已经带到宠物医院检查，确诊为后腿骨折，需要手术治疗。由于个人能力有限，恳请大家帮助橘子度过难关感激不尽！
+                </p>
+            </div>
+        </div>
+
+        <!-- Health Status -->
+        <div class="mb-4">
+            <h3 class="text-lg font-bold text-gray-900 mb-3">健康状况</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-red-50 rounded-xl p-3 flex items-center gap-2">
+                    <i class="fas fa-times-circle text-red-500"></i>
+                    <span class="text-sm text-gray-700">后腿骨折</span>
+                </div>
+                <div class="bg-gray-100 rounded-xl p-3 flex items-center gap-2">
+                    <i class="fas fa-question-circle text-gray-400"></i>
+                    <span class="text-sm text-gray-500">是否疫苗未知</span>
+                </div>
+                <div class="bg-gray-100 rounded-xl p-3 flex items-center gap-2">
+                    <i class="fas fa-question-circle text-gray-400"></i>
+                    <span class="text-sm text-gray-500">未绝育</span>
+                </div>
+                <div class="bg-green-50 rounded-xl p-3 flex items-center gap-2">
+                    <i class="fas fa-check text-green-500"></i>
+                    <span class="text-sm text-gray-700">精神良好</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location -->
+        <div class="mb-4">
+            <h3 class="text-lg font-bold text-gray-900 mb-3">当前位置</h3>
+            <div class="bg-gray-100 rounded-2xl h-40 flex items-center justify-center relative overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&h=400&fit=crop" alt="地图" class="w-full h-full object-cover opacity-30">
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="bg-white rounded-lg px-4 py-2 shadow-lg">
+                        <p class="text-sm font-medium text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-map-marker-alt text-red-500"></i>
+                            朝阳区三里屯街道
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-2">
+                <button class="flex-1 py-2 bg-blue-500 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2">
+                    <i class="fas fa-directions"></i>
+                    导航
+                </button>
+                <button class="flex-1 py-2 border border-gray-300 rounded-xl text-sm font-medium flex items-center justify-center gap-2">
+                    <i class="fas fa-share"></i>
+                    分享位置
+                </button>
+            </div>
+        </div>
+
+        <!-- Medical Fundraising -->
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 mb-4 border border-purple-100">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-heart text-red-500"></i>
+                    医疗众筹
+                </h3>
+                <span class="text-xs text-gray-500">急需帮助</span>
+            </div>
+
+            <div class="mb-3">
+                <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-gray-600">已筹集</span>
+                    <span class="font-bold text-gray-900">¥3,280 / ¥8,000</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style="width: 41%"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button class="w-full py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+                    <i class="fas fa-heart"></i>
+                    我要捐赠
+                </button>
+                <button class="w-full py-2 border border-purple-500 text-purple-600 rounded-xl text-sm font-medium">
+                    捐赠记录
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 safe-area-pb shadow-lg">
+        <div class="grid grid-cols-4 gap-3">
+            <button class="col-span-1 py-3 border border-gray-300 rounded-xl text-sm font-medium flex flex-col items-center gap-1">
+                <i class="fas fa-phone text-green-500"></i>
+                <span>电话</span>
+            </button>
+            <button class="col-span-1 py-3 border border-gray-300 rounded-xl text-sm font-medium flex flex-col items-center gap-1">
+                <i class="fas fa-comment text-blue-500"></i>
+                <span>咨询</span>
+            </button>
+            <button class="col-span-2 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+                <i class="fas fa-heart"></i>
+                申请领养
+            </button>
+        </div>
+    </div>
+</body>
+</html>

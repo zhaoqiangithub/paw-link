@@ -7,8 +7,10 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { ThemedView } from '@/components/themed-view';
+import { Gradients } from '@/constants/theme';
 
 const TABS = ['可报名', '我的活动', '成就'] as const;
 
@@ -57,7 +59,7 @@ export default function VolunteerScreen() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.hero}>
+        <LinearGradient colors={Gradients.orangeAmber} style={styles.hero}>
           <View>
             <Text style={styles.heroTitle}>志愿者活动</Text>
             <Text style={styles.heroSubtitle}>坚持每一次出发，守护每一个生命</Text>
@@ -65,7 +67,7 @@ export default function VolunteerScreen() {
           <View style={styles.levelBadge}>
             <Text style={styles.levelBadgeText}>P1 · 榜样</Text>
           </View>
-        </View>
+        </LinearGradient>
 
         <View style={styles.statsRow}>
           <StatCard label="服务时长(h)" value={stats.hours} />
@@ -171,7 +173,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    backgroundColor: '#FF9F43',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

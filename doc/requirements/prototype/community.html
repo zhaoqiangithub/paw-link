@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社区 - PawLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Status Bar -->
+    <div class="h-11 bg-black text-white flex justify-between items-center px-6 text-sm font-semibold">
+        <span>9:41</span>
+        <div class="flex items-center gap-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-4 text-white">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i class="fas fa-users"></i>
+                爱心社区
+            </h1>
+            <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+
+        <!-- Categories -->
+        <div class="flex gap-2 overflow-x-auto">
+            <button class="px-4 py-2 bg-white/20 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-1">
+                <i class="fas fa-fire"></i>
+                热门
+            </button>
+            <button class="px-4 py-2 bg-white/10 rounded-full text-sm font-medium whitespace-nowrap">
+                救助经验
+            </button>
+            <button class="px-4 py-2 bg-white/10 rounded-full text-sm font-medium whitespace-nowrap">
+                领养心得
+            </button>
+            <button class="px-4 py-2 bg-white/10 rounded-full text-sm font-medium whitespace-nowrap">
+                医疗知识
+            </button>
+        </div>
+    </div>
+
+    <!-- Posts -->
+    <div class="p-4 pb-24 space-y-4">
+        <!-- Post 1 -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <!-- Post Header -->
+            <div class="p-4 flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop" alt="用户头像" class="w-12 h-12 rounded-full object-cover">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h3 class="font-bold text-gray-900">爱心妈妈</h3>
+                        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">认证志愿者</span>
+                    </div>
+                    <p class="text-xs text-gray-500">2小时前 · 救助经验分享</p>
+                </div>
+                <button class="text-gray-400">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </div>
+
+            <!-- Post Content -->
+            <div class="px-4 pb-3">
+                <h4 class="font-bold text-gray-900 mb-2">成功救助流浪猫经验分享</h4>
+                <p class="text-sm text-gray-700 leading-relaxed">
+                    分享一些救助流浪猫的经验：<br>
+                    1️⃣ 先观察猫咪状态，不要急于接近<br>
+                    2️⃣ 准备好食物和水，慢慢建立信任<br>
+                    3️⃣ 联系当地救助机构获取帮助<br>
+                    4️⃣ 救助后及时体检和疫苗<br><br>
+                    希望能帮助到更多小伙伴！💪
+                </p>
+            </div>
+
+            <!-- Post Image -->
+            <div class="px-4 pb-3">
+                <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=600&h=400&fit=crop" alt="救助经历" class="w-full h-64 object-cover rounded-xl">
+            </div>
+
+            <!-- Post Actions -->
+            <div class="px-4 py-3 border-t border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-6">
+                        <button class="flex items-center gap-2 text-gray-600 hover:text-red-500">
+                            <i class="fas fa-heart"></i>
+                            <span class="text-sm">128</span>
+                        </button>
+                        <button class="flex items-center gap-2 text-gray-600 hover:text-blue-500">
+                            <i class="fas fa-comment"></i>
+                            <span class="text-sm">56</span>
+                        </button>
+                        <button class="flex items-center gap-2 text-gray-600 hover:text-green-500">
+                            <i class="fas fa-share"></i>
+                            <span class="text-sm">分享</span>
+                        </button>
+                    </div>
+                    <button class="flex items-center gap-2 text-gray-600">
+                        <i class="fas fa-bookmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Comments Preview -->
+            <div class="px-4 pb-4 bg-gray-50">
+                <div class="space-y-2">
+                    <div class="flex items-start gap-2">
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" alt="评论用户" class="w-6 h-6 rounded-full object-cover">
+                        <div class="flex-1">
+                            <p class="text-xs">
+                                <span class="font-semibold text-gray-900">小明</span>
+                                <span class="text-gray-700">太实用了！收藏了</span>
+                            </p>
+                        </div>
+                        <button class="text-xs text-gray-400">
+                            <i class="fas fa-heart"></i>
+                            12
+                        </button>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <img src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=100&h=100&fit=crop" alt="评论用户" class="w-6 h-6 rounded-full object-cover">
+                        <div class="flex-1">
+                            <p class="text-xs">
+                                <span class="font-semibold text-gray-900">小动物爱好者</span>
+                                <span class="text-gray-700">感谢分享！</span>
+                            </p>
+                        </div>
+                        <button class="text-xs text-gray-400">
+                            <i class="fas fa-heart"></i>
+                            8
+                        </button>
+                    </div>
+                </div>
+                <button class="text-xs text-gray-500 mt-2">查看全部 56 条评论</button>
+            </div>
+        </div>
+
+        <!-- Post 2 -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <!-- Post Header -->
+            <div class="p-4 flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop" alt="用户头像" class="w-12 h-12 rounded-full object-cover">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h3 class="font-bold text-gray-900">宠物医生张大夫</h3>
+                        <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs">专业认证</span>
+                    </div>
+                    <p class="text-xs text-gray-500">5小时前 · 医疗知识科普</p>
+                </div>
+                <button class="text-gray-400">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </div>
+
+            <!-- Post Content -->
+            <div class="px-4 pb-3">
+                <h4 class="font-bold text-gray-900 mb-2">猫咪常见疾病预防指南</h4>
+                <p class="text-sm text-gray-700 leading-relaxed">
+                    🐱 猫咪健康预防小贴士：<br><br>
+                    ✅ 定期疫苗接种（猫三联、狂犬疫苗）<br>
+                    ✅ 定期驱虫（体内外驱虫）<br>
+                    ✅ 健康饮食，避免人类食物<br>
+                    ✅ 保持环境清洁<br>
+                    ✅ 定期体检（建议每年一次）<br><br>
+                    有问题欢迎私信咨询～
+                </p>
+            </div>
+
+            <!-- Post Actions -->
+            <div class="px-4 py-3 border-t border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-6">
+                        <button class="flex items-center gap-2 text-gray-600 hover:text-red-500">
+                            <i class="fas fa-heart"></i>
+                            <span class="text-sm">342</span>
+                        </button>
+                        <button class="flex items-center gap-2 text-gray-600 hover:text-blue-500">
+                            <i class="fas fa-comment"></i>
+                            <span class="text-sm">89</span>
+                        </button>
+                        <button class="flex items-center gap-2 text-gray-600 hover:text-green-500">
+                            <i class="fas fa-share"></i>
+                            <span class="text-sm">分享</span>
+                        </button>
+                    </div>
+                    <button class="flex items-center gap-2 text-gray-600">
+                        <i class="fas fa-bookmark"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post 3 -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <!-- Post Header -->
+            <div class="p-4 flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=200&h=200&fit=crop" alt="用户头像" class="w-12 h-12 rounded-full object-cover">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h3 class="font-bold text-gray-900">Sunshine的妈妈</h3>
+                        <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">成功领养</span>
+                    </div>
+                    <p class="text-xs text-gray-500">1天前 · 领养心得分享</p>
+                </div>
+                <button class="text-gray-400">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </div>
+
+            <!-- Post Content -->
+            <div class="px-4 pb-3">
+                <h4 class="font-bold text-gray-900 mb-2">我的领养日记 - Sunshine的第一周</h4>
+                <p class="text-sm text-gray-700 leading-relaxed">
+                    🎉 正式领养Sunshine一周了！<br><br>
+                    第一天到家有点紧张，躲在沙发下面不肯出来。<br>
+                    准备了猫窝、猫砂盆、食物和水。<br>
+                    第二天开始慢慢适应，会主动靠近了。<br>
+                    现在已经完全信任我们，超级粘人！<br><br>
+                    领养代替购买，给它一个家💕
+                </p>
+            </div>
+
+            <!-- Post Images Grid -->
+            <div class="px-4 pb-3">
+                <div class="grid grid-cols-3 gap-2">
+                    <img src="https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=300&h=300&fit=crop" alt="Sunshine" class="w-full aspect-square object-cover rounded-lg">
+                    <img src="https://images.unsplash.com/photo-1596854407944-bf87f6fdd49f?w=300&h=300&fit=crop" alt="Sunshine" class="w-full aspect-square object-cover rounded-lg">
+                    <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=300&fit=crop" alt="Sunshine" class="w-full aspect-square object-cover rounded-lg">
+                </div>
+            </div>
+
+            <!-- Post Actions -->
+            <div class="px-4 py-3 border-t border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-6">
+                        <button class="flex items-center gap-2 text-gray-600 hover:text-red-500">
+                            <i class="fas fa-heart"></i>
+                            <span class="text-sm">256</span>
+                        </button>
+                        <button class="flex items-center gap-2 text-gray-600 hover:text-blue-500">
+                            <i class="fas fa-comment"></i>
+                            <span class="text-sm">73</span>
+                        </button>
+                        <button class="flex items-center gap-2 text-gray-600 hover:text-green-500">
+                            <i class="fas fa-share"></i>
+                            <span class="text-sm">分享</span>
+                        </button>
+                    </div>
+                    <button class="flex items-center gap-2 text-gray-600">
+                        <i class="fas fa-bookmark"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 safe-area-pb">
+        <div class="flex items-center justify-around">
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-home text-gray-400 text-xl"></i>
+                <span class="text-xs text-gray-400">首页</span>
+            </button>
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-search text-gray-400 text-xl"></i>
+                <span class="text-xs text-gray-400">探索</span>
+            </button>
+            <button class="relative -mt-6">
+                <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                    <i class="fas fa-plus text-white text-2xl"></i>
+                </div>
+            </button>
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-comment text-gray-400 text-xl"></i>
+                <span class="text-xs text-gray-400">消息</span>
+            </button>
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-user text-gray-400 text-xl"></i>
+                <span class="text-xs text-gray-400">我的</span>
+            </button>
+        </div>
+    </div>
+</body>
+</html>

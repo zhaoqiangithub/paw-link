@@ -7,12 +7,14 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
 import { useMessages } from '@/contexts/MessageContext';
 import { useApp } from '@/contexts/AppContext';
 import { PetInfoDB, UserDB } from '@/lib/database';
+import { Gradients, Colors } from '@/constants/theme';
 
 const TABS = [
   { key: 'private', label: '私信' },
@@ -216,7 +218,7 @@ export default function MessagesScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={styles.hero}>
+      <LinearGradient colors={Gradients.greenTeal} style={styles.hero}>
         <View style={styles.heroTopRow}>
           <View style={styles.heroTitleGroup}>
             <View style={styles.heroIcon}>
@@ -251,7 +253,7 @@ export default function MessagesScreen() {
             );
           })}
         </View>
-      </View>
+      </LinearGradient>
 
       {activeTab === 'private' ? (
         <FlatList

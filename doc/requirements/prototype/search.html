@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>探索 - PawLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Status Bar -->
+    <div class="h-11 bg-black text-white flex justify-between items-center px-6 text-sm font-semibold">
+        <span>9:41</span>
+        <div class="flex items-center gap-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-4 text-white">
+        <h1 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <i class="fas fa-search"></i>
+            探索更多
+        </h1>
+
+        <!-- Search Bar -->
+        <div class="bg-white rounded-xl px-4 py-3 flex items-center gap-3">
+            <i class="fas fa-search text-gray-400"></i>
+            <input type="text" placeholder="搜索宠物、品种、地点..." class="flex-1 outline-none text-gray-700">
+            <button class="text-purple-500">
+                <i class="fas fa-filter"></i>
+            </button>
+        </div>
+
+        <!-- Quick Filters -->
+        <div class="flex gap-2 mt-4 overflow-x-auto">
+            <button class="px-4 py-2 bg-white/20 rounded-full text-sm whitespace-nowrap flex items-center gap-1">
+                <i class="text-xs fa fa-heart"></i>
+                待领养
+            </button>
+            <button class="px-4 py-2 bg-white/10 rounded-full text-sm whitespace-nowrap">
+                <i class="text-xs fa fa-star"></i>
+                热门
+            </button>
+            <button class="px-4 py-2 bg-white/10 rounded-full text-sm whitespace-nowrap">
+                <i class="text-xs fa fa-clock"></i>
+                最新发布
+            </button>
+            <button class="px-4 py-2 bg-white/10 rounded-full text-sm whitespace-nowrap">
+                <i class="text-xs fa fa-heart-broken"></i>
+                需要帮助
+            </button>
+        </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="bg-white px-4 py-4 border-b border-gray-200">
+        <div class="flex gap-3 overflow-x-auto">
+            <button class="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-1">
+                <i class="fas fa-paw"></i>
+                全部
+            </button>
+            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium whitespace-nowrap">
+                <i class="fas fa-cat"></i>
+                猫咪
+            </button>
+            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium whitespace-nowrap">
+                <i class="fas fa-dog"></i>
+                狗狗
+            </button>
+            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium whitespace-nowrap">
+                <i class="fas fa-dove"></i>
+                鸟类
+            </button>
+            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium whitespace-nowrap">
+                <i class="fas fa-ellipsis-h"></i>
+                其他
+            </button>
+        </div>
+    </div>
+
+    <!-- Sort Options -->
+    <div class="bg-white px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+        <span class="text-sm text-gray-600">共找到 128 只宠物</span>
+        <button class="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <i class="fas fa-sort-amount-down"></i>
+            智能排序
+            <i class="fas fa-chevron-down text-xs"></i>
+        </button>
+    </div>
+
+    <!-- Pet Grid -->
+    <div class="p-4 pb-24">
+        <div class="grid grid-cols-2 gap-3">
+            <!-- Pet Card 1 -->
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=400&h=400&fit=crop" alt="橘猫" class="w-full aspect-square object-cover">
+                    <div class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        紧急
+                    </div>
+                    <button class="absolute top-2 right-2 w-8 h-8 bg-black/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-heart-o text-white text-sm"></i>
+                    </button>
+                    <div class="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                        <i class="fas fa-camera text-xs"></i>
+                        5
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h3 class="font-bold text-gray-900 mb-1">橘子</h3>
+                    <p class="text-xs text-gray-600 mb-2">后腿受伤，急需救助</p>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">雌性</span>
+                        <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">成年</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-map-marker-alt"></i>
+                            300m
+                        </span>
+                        <span class="text-xs text-gray-400">2小时前</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pet Card 2 -->
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=400&h=400&fit=crop" alt="金毛" class="w-full aspect-square object-cover">
+                    <div class="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        待领养
+                    </div>
+                    <button class="absolute top-2 right-2 w-8 h-8 bg-black/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-heart text-red-500 text-sm"></i>
+                    </button>
+                    <div class="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                        <i class="fas fa-camera text-xs"></i>
+                        8
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h3 class="font-bold text-gray-900 mb-1">Sunshine</h3>
+                    <p class="text-xs text-gray-600 mb-2">温顺亲人，已疫苗</p>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="bg-pink-100 text-pink-700 px-2 py-0.5 rounded text-xs">雄性</span>
+                        <span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs">幼年</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-map-marker-alt"></i>
+                            800m
+                        </span>
+                        <span class="text-xs text-gray-400">5小时前</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pet Card 3 -->
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop" alt="柯基" class="w-full aspect-square object-cover">
+                    <div class="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        已救助
+                    </div>
+                    <button class="absolute top-2 right-2 w-8 h-8 bg-black/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-heart-o text-white text-sm"></i>
+                    </button>
+                    <div class="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                        <i class="fas fa-camera text-xs"></i>
+                        6
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h3 class="font-bold text-gray-900 mb-1">豆豆</h3>
+                    <p class="text-xs text-gray-600 mb-2">康复中，找领养</p>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="bg-pink-100 text-pink-700 px-2 py-0.5 rounded text-xs">雄性</span>
+                        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">成年</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-map-marker-alt"></i>
+                            1.2km
+                        </span>
+                        <span class="text-xs text-gray-400">1天前</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pet Card 4 -->
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1558944351-c80f9eef6a55?w=400&h=400&fit=crop" alt="英短" class="w-full aspect-square object-cover">
+                    <div class="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        待领养
+                    </div>
+                    <button class="absolute top-2 right-2 w-8 h-8 bg-black/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-heart-o text-white text-sm"></i>
+                    </button>
+                    <div class="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                        <i class="fas fa-camera text-xs"></i>
+                        3
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h3 class="font-bold text-gray-900 mb-1">雪花</h3>
+                    <p class="text-xs text-gray-600 mb-2">英短银渐层</p>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="bg-pink-100 text-pink-700 px-2 py-0.5 rounded text-xs">雌性</span>
+                        <span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs">幼年</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-map-marker-alt"></i>
+                            2.5km
+                        </span>
+                        <span class="text-xs text-gray-400">2天前</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pet Card 5 -->
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=400&fit=crop" alt="边牧" class="w-full aspect-square object-cover">
+                    <div class="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        临时寄养
+                    </div>
+                    <button class="absolute top-2 right-2 w-8 h-8 bg-black/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-heart text-red-500 text-sm"></i>
+                    </button>
+                    <div class="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                        <i class="fas fa-camera text-xs"></i>
+                        4
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h3 class="font-bold text-gray-900 mb-1">智商</h3>
+                    <p class="text-xs text-gray-600 mb-2">边牧，寻找寄养</p>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="bg-pink-100 text-pink-700 px-2 py-0.5 rounded text-xs">雄性</span>
+                        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">成年</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-map-marker-alt"></i>
+                            3.1km
+                        </span>
+                        <span class="text-xs text-gray-400">3天前</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pet Card 6 -->
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1537151625747-768eb6cf92b6?w=400&h=400&fit=crop" alt="布偶猫" class="w-full aspect-square object-cover">
+                    <div class="absolute top-2 left-2 bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        医疗众筹
+                    </div>
+                    <button class="absolute top-2 right-2 w-8 h-8 bg-black/30 rounded-full flex items-center justify-center">
+                        <i class="fas fa-heart-o text-white text-sm"></i>
+                    </button>
+                    <div class="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                        <i class="fas fa-camera text-xs"></i>
+                        7
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h3 class="font-bold text-gray-900 mb-1">布丁</h3>
+                    <p class="text-xs text-gray-600 mb-2">需要手术治疗</p>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">雌性</span>
+                        <span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs">幼年</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-map-marker-alt"></i>
+                            4.2km
+                        </span>
+                        <span class="text-xs text-gray-400">1周前</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 safe-area-pb">
+        <div class="flex items-center justify-around">
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-home text-gray-400 text-xl"></i>
+                <span class="text-xs text-gray-400">首页</span>
+            </button>
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-search text-purple-500 text-xl"></i>
+                <span class="text-xs text-purple-500 font-medium">探索</span>
+            </button>
+            <button class="relative -mt-6">
+                <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                    <i class="fas fa-plus text-white text-2xl"></i>
+                </div>
+            </button>
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-comment text-gray-400 text-xl"></i>
+                <span class="text-xs text-gray-400">消息</span>
+            </button>
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-user text-gray-400 text-xl"></i>
+                <span class="text-xs text-gray-400">我的</span>
+            </button>
+        </div>
+    </div>
+</body>
+</html>

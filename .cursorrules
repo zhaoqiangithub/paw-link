@@ -27,4 +27,10 @@
 - db/supabase/: Supabase db logic.
 - utils/: Utils.
 
-
+## Doc
+- doc/requirements: 需求规划文档
+- doc/requirements/prototype: 原型文档，基于代码形式的可视化高保真原型
+- doc/design: 设计文档
+- doc/deployment: 开发文档，与已开发
+- doc/testing: 测试用例
+- doc/user_guide: 用户使用指南

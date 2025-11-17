@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消息 - PawLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Status Bar -->
+    <div class="h-11 bg-black text-white flex justify-between items-center px-6 text-sm font-semibold">
+        <span>9:41</span>
+        <div class="flex items-center gap-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-500 to-teal-500 px-4 py-4 text-white">
+        <div class="flex items-center justify-between">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i class="fas fa-comment-dots"></i>
+                消息
+            </h1>
+            <div class="flex items-center gap-4">
+                <button>
+                    <i class="fas fa-search text-xl"></i>
+                </button>
+                <button>
+                    <i class="fas fa-plus text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="flex">
+            <button class="flex-1 py-3 text-center border-b-2 border-green-500 text-green-500 font-medium text-sm">
+                私信
+            </button>
+            <button class="flex-1 py-3 text-center text-gray-500 font-medium text-sm">
+                通知
+            </button>
+            <button class="flex-1 py-3 text-center text-gray-500 font-medium text-sm">
+                系统
+            </button>
+        </div>
+    </div>
+
+    <!-- Conversation List -->
+    <div class="pb-24">
+        <!-- Chat Item 1 -->
+        <div class="bg-white p-4 border-b border-gray-100 hover:bg-gray-50">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop" alt="王先生" class="w-14 h-14 rounded-full object-cover">
+                    <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-gray-900 truncate">王先生</h3>
+                        <span class="text-xs text-gray-400">2分钟前</span>
+                    </div>
+                    <p class="text-sm text-gray-600 truncate mb-1">谢谢您对小橘的关注，它现在情况稳定了</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">已回复</span>
+                        <span class="text-xs text-gray-500">关于 橘子</span>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Item 2 -->
+        <div class="bg-white p-4 border-b border-gray-100 hover:bg-gray-50">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop" alt="爱心之家" class="w-14 h-14 rounded-full object-cover">
+                    <div class="absolute bottom-0 right-0 w-4 h-4 bg-gray-400 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-gray-900 truncate">爱心之家救助站</h3>
+                        <span class="text-xs text-gray-400">1小时前</span>
+                    </div>
+                    <p class="text-sm text-gray-600 truncate mb-1">您申请领养的Sunshine已经通过初审...</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">领养申请</span>
+                        <span class="text-xs text-gray-500">关于 Sunshine</span>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Item 3 -->
+        <div class="bg-white p-4 border-b border-gray-100 hover:bg-gray-50">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop" alt="小动物保护协会" class="w-14 h-14 rounded-full object-cover">
+                    <div class="absolute bottom-0 right-0 w-4 h-4 bg-gray-400 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-gray-900 truncate">小动物保护协会</h3>
+                        <span class="text-xs text-gray-400">3小时前</span>
+                    </div>
+                    <p class="text-sm text-gray-600 truncate mb-1">您发布的医疗众筹项目已有新捐赠</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded">众筹更新</span>
+                        <span class="text-xs text-gray-500">关于 布丁</span>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Item 4 -->
+        <div class="bg-white p-4 border-b border-gray-100 hover:bg-gray-50">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <div class="w-14 h-14 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-bullhorn text-white text-2xl"></i>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-gray-900 truncate">系统通知</h3>
+                        <span class="text-xs text-gray-400">昨天</span>
+                    </div>
+                    <p class="text-sm text-gray-600 truncate mb-1">恭喜您完成身份认证，获得认证徽章</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded">系统</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Item 5 -->
+        <div class="bg-white p-4 border-b border-gray-100 hover:bg-gray-50">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=200&h=200&fit=crop" alt="张医生" class="w-14 h-14 rounded-full object-cover">
+                    <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-gray-900 truncate">张医生（宠物医院）</h3>
+                        <span class="text-xs text-gray-400">昨天</span>
+                    </div>
+                    <p class="text-sm text-gray-600 truncate mb-1">豆豆的康复情况良好，可以安排出院了</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">医疗</span>
+                        <span class="text-xs text-gray-500">关于 豆豆</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Item 6 -->
+        <div class="bg-white p-4 border-b border-gray-100 hover:bg-gray-50">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=200&h=200&fit=crop" alt="志愿者小李" class="w-14 h-14 rounded-full object-cover">
+                    <div class="absolute bottom-0 right-0 w-4 h-4 bg-gray-400 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-gray-900 truncate">志愿者小李</h3>
+                        <span class="text-xs text-gray-400">2天前</span>
+                    </div>
+                    <p class="text-sm text-gray-600 truncate mb-1">明天的救助活动您方便参加吗？</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded">活动邀请</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white mt-4 p-4 border-b border-gray-100">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">快捷操作</h3>
+            <div class="grid grid-cols-3 gap-3">
+                <button class="p-3 bg-blue-50 rounded-xl flex flex-col items-center gap-2">
+                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-heart text-white"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700">我的收藏</span>
+                </button>
+                <button class="p-3 bg-green-50 rounded-xl flex flex-col items-center gap-2">
+                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-star text-white"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700">特别关注</span>
+                </button>
+                <button class="p-3 bg-purple-50 rounded-xl flex flex-col items-center gap-2">
+                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-white"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700">举报中心</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 safe-area-pb">
+        <div class="flex items-center justify-around">
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-home text-gray-400 text-xl"></i>
+                <span class="text-xs text-gray-400">首页</span>
+            </button>
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-search text-gray-400 text-xl"></i>
+                <span class="text-xs text-gray-400">探索</span>
+            </button>
+            <button class="relative -mt-6">
+                <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                    <i class="fas fa-plus text-white text-2xl"></i>
+                </div>
+            </button>
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-comment text-green-500 text-xl"></i>
+                <span class="text-xs text-green-500 font-medium">消息</span>
+            </button>
+            <button class="flex flex-col items-center gap-1">
+                <i class="fas fa-user text-gray-400 text-xl"></i>
+                <span class="text-xs text-gray-400">我的</span>
+            </button>
+        </div>
+    </div>
+</body>
+</html>

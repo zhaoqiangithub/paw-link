@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
@@ -15,6 +16,7 @@ import { MapComponent } from '@/components/MapView';
 import { ThemedView } from '@/components/themed-view';
 import { useLocation } from '@/hooks/use-location';
 import { PetInfo, PetInfoDB } from '@/lib/database';
+import { Gradients, Colors, PetStatusBadges } from '@/constants/theme';
 
 const STATUS_FILTERS = [
   { key: 'for_adoption', label: '待领养' },
@@ -59,7 +61,7 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={[styles.hero, { paddingTop: insets.top + 8 }]}>
+      <LinearGradient colors={Gradients.blue} style={[styles.hero, { paddingTop: insets.top + 8 }]}>
         <View style={styles.heroHeader}>
           <View>
             <Text style={styles.brand}>PawLink</Text>
@@ -79,9 +81,9 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.searchBar}>
-          <Ionicons name="search" size={18} color="#8EA1E6" />
-          <Text style={styles.searchPlaceholder}>搜索附近的宠物、地点...</Text>
-          <Ionicons name="funnel-outline" size={18} color="#8EA1E6" />
+          <Ionicons name="search" size={18} color="#9CA3AF" />
+          <Text style={styles.searchPlaceholder}>搜索附近的宠物...</Text>
+          <Ionicons name="options-outline" size={18} color="#9CA3AF" />
         </View>
 
         <View style={styles.statusRow}>
@@ -93,6 +95,15 @@ export default function HomeScreen() {
                 style={[styles.statusChip, active && styles.statusChipActive]}
                 onPress={() => setStatusFilter(item.key)}
               >
+                {item.key === 'for_adoption' && (
+                  <Ionicons name="heart-outline" size={12} color={active ? '#3B82F6' : 'rgba(255,255,255,0.9)'} />
+                )}
+                {item.key === 'needs_rescue' && (
+                  <Ionicons name="medkit-outline" size={12} color={active ? '#3B82F6' : 'rgba(255,255,255,0.9)'} />
+                )}
+                {item.key === 'emergency' && (
+                  <Ionicons name="warning-outline" size={12} color={active ? '#3B82F6' : 'rgba(255,255,255,0.9)'} />
+                )}
                 <Text style={[styles.statusChipText, active && styles.statusChipTextActive]}>
                   {item.label}
                 </Text>
@@ -100,12 +111,11 @@ export default function HomeScreen() {
             );
           })}
           <TouchableOpacity style={styles.distanceChip} onPress={cycleDistance}>
-            <Ionicons name="locate" size={14} color="#fff" />
+            <Ionicons name="location-outline" size={14} color="#fff" />
             <Text style={styles.distanceChipText}>{distance}km内</Text>
           </TouchableOpacity>
         </View>
-
-      </View>
+      </LinearGradient>
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.mapSection}>
@@ -229,29 +239,29 @@ function getTimeLabel(createdAt: number) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FF',
+    backgroundColor: Colors.light.background,
   },
   hero: {
-    backgroundColor: '#2C6CFF',
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
   heroHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 16,
   },
   brand: {
     color: '#fff',
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '700',
   },
   locationLabel: {
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: 13,
+    marginTop: 2,
   },
   heroActions: {
     flexDirection: 'row',
@@ -267,38 +277,41 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: 8,
-    right: 10,
+    top: 6,
+    right: 6,
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#FF5E5E',
+    backgroundColor: '#EF4444',
   },
   searchBar: {
-    marginTop: 16,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingHorizontal: 14,
+    borderRadius: 12,
+    paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 8,
+    marginBottom: 12,
   },
   searchPlaceholder: {
     flex: 1,
-    color: '#9AA7D5',
+    color: '#6B7280',
     fontSize: 14,
   },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 14,
     gap: 8,
+    flexWrap: 'wrap',
   },
   statusChip: {
-    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.2)',
   },
   statusChipActive: {
@@ -310,15 +323,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   statusChipTextActive: {
-    color: '#2C6CFF',
+    color: '#3B82F6',
   },
   distanceChip: {
     marginLeft: 'auto',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#1F55DA',
-    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
@@ -328,42 +341,42 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   content: {
-    paddingHorizontal: 20,
-    paddingBottom: 120,
-    gap: 16,
-    marginTop: -20,
+    paddingHorizontal: 16,
+    paddingBottom: 100,
+    gap: 12,
+    marginTop: -8,
   },
   mapSection: {
-    height: 360,
+    height: 400,
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: '#DEE7FF',
+    backgroundColor: '#E5E7EB',
   },
   mapControls: {
     position: 'absolute',
-    right: 12,
-    top: 12,
+    right: 16,
+    top: 16,
     gap: 8,
   },
   controlButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
   },
   legendRow: {
     position: 'absolute',
-    left: 12,
-    bottom: 12,
+    left: 16,
+    bottom: 16,
     flexDirection: 'row',
     gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(255,255,255,0.95)',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -380,51 +393,54 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 11,
-    color: '#1F2A44',
+    color: '#374151',
     fontWeight: '600',
   },
   mapLocationChip: {
     position: 'absolute',
     left: 16,
-    bottom: 18,
+    bottom: 60,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     backgroundColor: '#fff',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     elevation: 3,
   },
   mapLocationText: {
-    color: '#1F2A44',
-    fontSize: 12,
+    color: '#374151',
+    fontSize: 13,
     fontWeight: '600',
   },
   petCarousel: {
-    marginTop: 12,
+    marginTop: 0,
   },
   petCarouselContent: {
     gap: 12,
-    paddingRight: 20,
+    paddingRight: 16,
+    paddingTop: 8,
   },
   petCard: {
-    width: 200,
-    borderRadius: 16,
+    width: 280,
+    borderRadius: 20,
     backgroundColor: '#fff',
-    padding: 14,
+    padding: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   petImageWrapper: {
     width: '100%',
-    height: 110,
-    borderRadius: 12,
+    height: 140,
+    borderRadius: 16,
     overflow: 'hidden',
     marginBottom: 10,
     position: 'relative',
@@ -435,43 +451,43 @@ const styles = StyleSheet.create({
   },
   petBadge: {
     position: 'absolute',
-    top: 10,
-    left: 10,
+    top: 8,
+    left: 8,
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   petBadgeText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   petTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1F2A44',
+    color: '#111827',
+    marginBottom: 4,
   },
   petMeta: {
-    marginTop: 6,
-    color: '#8A94A6',
+    color: '#6B7280',
     fontSize: 12,
-    lineHeight: 18,
+    lineHeight: 16,
+    marginBottom: 6,
   },
   petMetaHint: {
-    marginTop: 4,
-    color: '#8A94A6',
+    color: '#9CA3AF',
     fontSize: 11,
   },
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFEAEA',
+    backgroundColor: '#FEE2E2',
     padding: 12,
-    borderRadius: 14,
+    borderRadius: 12,
     gap: 8,
   },
   errorText: {
-    color: '#FF6B6B',
+    color: '#DC2626',
     fontSize: 12,
   },
 });

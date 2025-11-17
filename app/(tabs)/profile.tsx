@@ -7,10 +7,12 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { ThemedView } from '@/components/themed-view';
 import { useApp } from '@/contexts/AppContext';
 import { PetInfoDB, StoryDB, SuccessCaseDB } from '@/lib/database';
+import { Gradients } from '@/constants/theme';
 
 interface ProfileStats {
   rescued: number;
@@ -77,7 +79,7 @@ export default function ProfileScreen() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.hero}>
+        <LinearGradient colors={Gradients.indigoPurple} style={styles.hero}>
           <View style={styles.heroHeader}>
             <View>
               <Text style={styles.heroName}>{user?.nickname || '志愿者'}</Text>
@@ -105,7 +107,7 @@ export default function ProfileScreen() {
               <Text style={styles.heroStatLabel}>积分</Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>

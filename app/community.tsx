@@ -7,11 +7,13 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 
 import { ThemedView } from '@/components/themed-view';
 import { useApp } from '@/contexts/AppContext';
 import { StoryDB, StoryLikeDB, UserDB, type Story } from '@/lib/database';
+import { Gradients } from '@/constants/theme';
 
 const FILTERS = ['热门', '救助经验', '领养心得', '医疗知识'];
 
@@ -79,10 +81,10 @@ export default function CommunityScreen() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.hero}>
+        <LinearGradient colors={Gradients.pinkRose} style={styles.hero}>
           <Text style={styles.heroTitle}>爱心社区</Text>
           <Text style={styles.heroSubtitle}>分享救助经验 · 连接更多伙伴</Text>
-        </View>
+        </LinearGradient>
 
         <View style={styles.filterRow}>
           {FILTERS.map((filter) => {
@@ -166,7 +168,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    backgroundColor: '#FF7EB3',
   },
   heroTitle: {
     color: '#fff',
