@@ -272,6 +272,7 @@ export const AmapWebView: React.FC<AmapWebViewProps & { webViewRef?: React.RefOb
         domStorageEnabled={true}
         cacheEnabled={true}
         cacheMode="LOAD_DEFAULT"
+        geolocationEnabled={true}
         // 性能优化
         androidHardwareAccelerationDisabled={false}  // 启用硬件加速
         androidLayerType="hardware"

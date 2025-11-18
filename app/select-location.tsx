@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,7 +7,6 @@ import {
   Alert,
   SafeAreaView,
   ActivityIndicator,
-  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -26,9 +25,12 @@ export default function SelectLocationScreen() {
   // 从路由参数获取初始位置（如果有）
   const initialLng = params.longitude ? parseFloat(params.longitude as string) : undefined;
   const initialLat = params.latitude ? parseFloat(params.latitude as string) : undefined;
-  const initialCenter = initialLng && initialLat
-    ? { longitude: initialLng, latitude: initialLat }
-    : undefined;
+  const initialCenter = useMemo(() => {
+    if (initialLng && initialLat) {
+      return { longitude: initialLng, latitude: initialLat };
+    }
+    return undefined;
+  }, [initialLng, initialLat]);
 
   // 状态管理
   const [selectedLocation, setSelectedLocation] = useState<LocationInfo | null>(
@@ -37,14 +39,42 @@ export default function SelectLocationScreen() {
   const [isLocating, setIsLocating] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
 
+  const sendSelectedLocationToMap = useCallback((
+    longitude: number,
+    latitude: number,
+    options?: { center?: boolean; zoom?: number }
+  ) => {
+    if (!webViewRef.current) return;
+    webViewRef.current.postMessage(JSON.stringify({
+      type: 'SET_SELECTED_LOCATION',
+      longitude,
+      latitude,
+      shouldCenter: options?.center ?? false,
+      zoom: options?.zoom,
+    }));
+  }, [webViewRef]);
+
+  const requestMapLocation = useCallback(() => {
+    if (!webViewRef.current) return;
+    setIsLocating(true);
+    webViewRef.current.postMessage(JSON.stringify({
+      type: 'GET_LOCATION',
+    }));
+  }, [webViewRef]);
+
   // 地图加载完成
   const handleMapLoaded = useCallback(() => {
     setMapLoaded(true);
-    // 如果没有初始位置，自动定位
-    if (!initialCenter) {
-      handleRelocate();
+    // 如果有初始位置，渲染标记；否则自动定位
+    if (initialCenter) {
+      sendSelectedLocationToMap(initialCenter.longitude, initialCenter.latitude, {
+        center: true,
+        zoom: 16,
+      });
+    } else {
+      requestMapLocation();
     }
-  }, [initialCenter]);
+  }, [initialCenter, requestMapLocation, sendSelectedLocationToMap]);
 
   // 搜索结果回调
   const handleSearchResults = useCallback((results: SearchResult[]) => {
@@ -61,6 +91,8 @@ export default function SelectLocationScreen() {
       address: '正在获取地址...',
     });
 
+    sendSelectedLocationToMap(location.longitude, location.latitude);
+
     // 向 WebView 发送消息进行逆地理编码
     if (webViewRef.current) {
       webViewRef.current.postMessage(JSON.stringify({
@@ -69,7 +101,7 @@ export default function SelectLocationScreen() {
         latitude: location.latitude,
       }));
     }
-  }, []);
+  }, [sendSelectedLocationToMap]);
 
   // 定位成功回调
   const handleLocationSuccess = useCallback((location: LocationInfo) => {
@@ -80,7 +112,8 @@ export default function SelectLocationScreen() {
       address: location.address || '未知地址',
       accuracy: location.accuracy,
     });
-  }, []);
+    sendSelectedLocationToMap(location.longitude, location.latitude, { center: true });
+  }, [sendSelectedLocationToMap]);
 
   // 定位失败回调
   const handleLocationError = useCallback((error: { message: string }) => {
@@ -91,13 +124,8 @@ export default function SelectLocationScreen() {
   // 重新定位
   const handleRelocate = useCallback(() => {
     if (!mapLoaded) return;
-    setIsLocating(true);
-    if (webViewRef.current) {
-      webViewRef.current.postMessage(JSON.stringify({
-        type: 'GET_LOCATION',
-      }));
-    }
-  }, [mapLoaded]);
+    requestMapLocation();
+  }, [mapLoaded, requestMapLocation]);
 
   // 确认位置
   const handleConfirm = useCallback(() => {
@@ -158,23 +186,18 @@ export default function SelectLocationScreen() {
       {/* 地址搜索组件 */}
       <AddressSearch
         webViewRef={webViewRef}
+        searchResults={searchResults}
         onLocationSelect={(location) => {
-          setIsLocating(true);
           setSelectedLocation({
             longitude: location.longitude,
             latitude: location.latitude,
             address: location.address,
           });
-
-          // 移动地图中心到选中的位置
-          if (webViewRef.current) {
-            webViewRef.current.postMessage(JSON.stringify({
-              type: 'CENTER_MAP',
-              longitude: location.longitude,
-              latitude: location.latitude,
-              zoom: 17,
-            }));
-          }
+          sendSelectedLocationToMap(location.longitude, location.latitude, {
+            center: true,
+            zoom: 17,
+          });
+          setIsLocating(false);
         }}
         placeholder="搜索地址或地点"
       />

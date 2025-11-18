@@ -25,6 +25,7 @@ export const getInitMapScript = (
     window.AMapReady = false;
     window.PetMarkers = [];
     window.map = null;
+    window.selectedLocationMarker = null;
 
     // 检查AMap对象是否可用
     function checkAMapAndInit() {
@@ -32,6 +33,57 @@ export const getInitMapScript = (
         initAMap();
       } else {
         setTimeout(checkAMapAndInit, 100);
+      }
+    }
+
+    function updateSelectedLocationMarker(lng, lat) {
+      if (!window.map || typeof AMap === 'undefined') {
+        return;
+      }
+
+      const markerIcon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(
+        '<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">' +
+          '<defs>' +
+            '<linearGradient id="selectedGrad" x1="0%" y1="0%" x2="0%" y2="100%">' +
+              '<stop offset="0%" stop-color="#4285F4" />' +
+              '<stop offset="100%" stop-color="#2A68F3" />' +
+            '</linearGradient>' +
+            '<filter id="selectedShadow" x="-50%" y="-50%" width="200%" height="200%">' +
+              '<feGaussianBlur in="SourceAlpha" stdDeviation="3"/>' +
+              '<feOffset dx="0" dy="2" result="offsetblur"/>' +
+              '<feComponentTransfer>' +
+                '<feFuncA type="linear" slope="0.3"/>' +
+              '</feComponentTransfer>' +
+              '<feMerge>' +
+                '<feMergeNode/>' +
+                '<feMergeNode in="SourceGraphic"/>' +
+              '</feMerge>' +
+            '</filter>' +
+          '</defs>' +
+          '<circle cx="20" cy="18" r="12" fill="url(#selectedGrad)" stroke="white" stroke-width="3" filter="url(#selectedShadow)" />' +
+          '<circle cx="20" cy="18" r="5" fill="white" />' +
+          '<circle cx="20" cy="18" r="2.8" fill="#2A68F3" />' +
+          '<ellipse cx="20" cy="34" rx="6" ry="3" fill="#9DBDF8" opacity="0.5" />' +
+        '</svg>'
+      )));
+
+      if (!window.selectedLocationMarker) {
+        window.selectedLocationMarker = new AMap.Marker({
+          position: [lng, lat],
+          icon: new AMap.Icon({
+            size: new AMap.Size(40, 40),
+            image: markerIcon,
+            imageSize: new AMap.Size(40, 40)
+          }),
+          offset: new AMap.Pixel(0, -20),
+          anchor: 'bottom-center',
+          zIndex: 140,
+          animation: 'AMAP_ANIMATION_DROP'
+        });
+        window.map.add(window.selectedLocationMarker);
+      } else {
+        window.selectedLocationMarker.setPosition([lng, lat]);
+        window.selectedLocationMarker.show();
       }
     }
 
@@ -100,6 +152,7 @@ export const getInitMapScript = (
       // 地图点击事件
       window.map.on('click', function(e) {
         const lnglat = e.lnglat;
+        updateSelectedLocationMarker(lnglat.lng, lnglat.lat);
         if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
           window.ReactNativeWebView.postMessage(JSON.stringify({
             type: 'MAP_CLICK',
@@ -341,6 +394,8 @@ export const getInitMapScript = (
             window.map.setCenter([location.lng, location.lat]);
             window.map.setZoom(16);
 
+            updateSelectedLocationMarker(location.lng, location.lat);
+
             console.log('Location success:', location.lng, location.lat);
 
             // 地理编码：将坐标转换为具体街道地址
@@ -416,11 +471,13 @@ export const getInitMapScript = (
  */
 export const getWebViewJavaScript = (): string => {
   return `
-    window.ReactNativeWebView = {
-      postMessage: function(data) {
-        window.postMessage(data, '*');
-      }
-    };
+    if (!window.ReactNativeWebView) {
+      window.ReactNativeWebView = {
+        postMessage: function(data) {
+          window.postMessage(data, '*');
+        }
+      };
+    }
   `;
 };
 
@@ -566,6 +623,7 @@ export const getAmapHtmlTemplate = (
               case 'REVERSE_GEOCODE':
                 // 逆地理编码：坐标转地址
                 if (window.map && data.longitude && data.latitude) {
+                  updateSelectedLocationMarker(data.longitude, data.latitude);
                   AMap.plugin('AMap.Geocoder', function() {
                     const geocoder = new AMap.Geocoder({
                       batch: false,
@@ -614,6 +672,19 @@ export const getAmapHtmlTemplate = (
                       }
                     });
                   });
+                }
+                break;
+
+              case 'SET_SELECTED_LOCATION':
+                if (window.map && data.longitude && data.latitude) {
+                  updateSelectedLocationMarker(data.longitude, data.latitude);
+                  if (data.zoom) {
+                    window.map.setZoom(data.zoom);
+                  }
+                  const shouldCenter = !!data.shouldCenter;
+                  if (shouldCenter) {
+                    window.map.setCenter([data.longitude, data.latitude]);
+                  }
                 }
                 break;
 

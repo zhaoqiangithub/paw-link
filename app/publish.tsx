@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedView } from '@/components/themed-view';
 import { useApp } from '@/contexts/AppContext';
@@ -86,6 +87,7 @@ export default function PublishScreen() {
   const { user } = useApp();
   const { location, getCurrentLocation } = useLocation();
   const { selectedLocation, selectLocation, clearLocation } = useLocationContext();
+  const insets = useSafeAreaInsets();
   const {
     images,
     loading: imageLoading,
@@ -139,22 +141,25 @@ export default function PublishScreen() {
     // 计算滚动位置百分比
     const scrollPercent = offsetY / Math.max(contentHeight - scrollViewHeight, 1);
 
-    // 根据滚动位置更新步骤（仅在未选择位置时）
-    if (currentStepIndex < 2) {
-      if (scrollPercent < 0.3) {
-        setCurrentStepIndex(0); // 发布类型
-      } else if (scrollPercent < 0.7) {
-        setCurrentStepIndex(1); // 基本信息
-      } else {
-        setCurrentStepIndex(2); // 选择位置
-      }
+    // 根据滚动位置更新步骤
+    let newStepIndex = currentStepIndex;
+    if (scrollPercent < 0.3) {
+      newStepIndex = 0; // 发布类型
+    } else if (scrollPercent < 0.7) {
+      newStepIndex = 1; // 基本信息
+    } else {
+      newStepIndex = 2; // 选择位置
+    }
+
+    if (newStepIndex !== currentStepIndex) {
+      setCurrentStepIndex(newStepIndex);
     }
   };
 
   // 监听路由返回，更新步骤状态
   useEffect(() => {
+    // 监听焦点事件，当从位置选择页面返回且已有位置时，进入完成步骤
     const unsubscribe = router.addListener?.('focus', () => {
-      // 当从位置选择页面返回时，如果已有位置，则进入"完成"步骤
       if (selectedLocation) {
         setCurrentStepIndex(3); // 完成步骤
       }
@@ -410,15 +415,14 @@ export default function PublishScreen() {
   );
 
   return (
-    <>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-        style={styles.container}
+      <KeyboardAvoidingView
+        style={[styles.container, { backgroundColor: 'transparent' }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
       >
-        <View style={styles.fixedHeader}>
+        <View style={styles.headerContainer}>
           <LinearGradient colors={Gradients.blue} style={styles.headerGradient}>
             <View style={styles.topActions}>
               <TouchableOpacity style={styles.navButton} onPress={handleBack}>
@@ -439,21 +443,21 @@ export default function PublishScreen() {
               <View style={[styles.progressBarFill, { width: progressWidth }]} />
             </View>
           </LinearGradient>
-        </View>
 
-        {/* 草稿提示条 */}
-        {hasDraft && !isLoadingDraft && (
-          <View style={styles.draftBanner}>
-            <Ionicons name="document-text-outline" size={16} color="#3A7AFE" />
-            <Text style={styles.draftBannerText}>您有未发布的草稿</Text>
-            <TouchableOpacity onPress={handleLoadDraft}>
-              <Text style={styles.draftBannerAction}>恢复</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleClearDraft}>
-              <Text style={styles.draftBannerClear}>清除</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          {/* 草稿提示条 */}
+          {hasDraft && !isLoadingDraft && (
+            <View style={styles.draftBanner}>
+              <Ionicons name="document-text-outline" size={16} color="#3A7AFE" />
+              <Text style={styles.draftBannerText}>您有未发布的草稿</Text>
+              <TouchableOpacity onPress={handleLoadDraft}>
+                <Text style={styles.draftBannerAction}>恢复</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleClearDraft}>
+                <Text style={styles.draftBannerClear}>清除</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
         <ScrollView
           ref={scrollViewRef}
           contentContainerStyle={styles.scrollContent}
@@ -461,7 +465,7 @@ export default function PublishScreen() {
           onScroll={handleScroll}
           scrollEventThrottle={16}
         >
-          <ThemedView style={styles.body}>
+          <ThemedView style={[styles.body, { backgroundColor: '#F4F7FF' }]}>
             <View style={styles.sectionCard}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>选择发布类型</Text>
@@ -722,29 +726,28 @@ export default function PublishScreen() {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
-    </>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F4F7FF',
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,
-    backgroundColor: '#F4F7FF',
   },
   scrollContent: {
-    paddingTop: 180,
+    paddingTop: 170,
     paddingBottom: 180,
   },
-  fixedHeader: {
+  headerContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     zIndex: 1000,
+    backgroundColor: 'transparent',
   },
   headerGradient: {
     paddingTop: 12,

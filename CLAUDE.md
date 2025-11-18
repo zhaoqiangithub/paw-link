@@ -60,7 +60,11 @@ The codebase follows a clean three-layer architecture:
 
 **User System**: Simplified device-based authentication using `expo-secure-store` for device ID. No traditional login/signup - see `lib/device.ts`.
 
-**Maps**: Custom map component implementation in `components/MapView.tsx` (not react-native-maps native module) to avoid native dependencies.
+**Location Permissions**: Configured in `app.json`:
+- iOS: Uses `infoPlist` with `NSLocationWhenInUseUsageDescription` and `NSLocationAlwaysAndWhenInUseUsageDescription` for Chinese user-friendly permission prompts
+- Android: Requires `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION` permissions
+
+**Maps**: Hybrid approach using `react-native-maps` for native map rendering (system default maps) with `Amap API` for reverse geocoding. See `components/NativeMapView.tsx`. This provides better performance while maintaining accurate Chinese address support.
 
 **Distance Calculation**: Implemented in JavaScript frontend (Haversine formula) rather than SQL - see `lib/database.ts:406`.
 
@@ -87,7 +91,8 @@ pawlink/
 │   ├── chat.tsx                  # Messaging
 │   └── _layout.tsx               # Root layout
 ├── components/                   # Reusable components
-│   ├── MapView.tsx               # Custom map
+│   ├── MapView.tsx               # Map container (uses NativeMapView)
+│   ├── NativeMapView.tsx         # Hybrid map component (react-native-maps + Amap API)
 │   ├── SearchFilters.tsx         # Search filters
 │   ├── PetInfoCard.tsx           # Pet info card
 │   ├── ContactActions.tsx        # Contact options
@@ -101,6 +106,8 @@ pawlink/
 ├── contexts/                     # State management
 │   ├── AppContext.tsx            # Global state
 │   └── MessageContext.tsx        # Message state
+├── config/                       # Configuration
+│   └── amap-api-keys.ts          # Amap API keys for reverse geocoding
 └── constants/
     └── theme.ts                  # UI theme
 ```
@@ -122,10 +129,12 @@ All components use inline style objects referencing theme colors from `constants
 ## Important Files to Know
 
 - `lib/database.ts` - Complete database layer (CRUD operations for all tables)
+- `components/NativeMapView.tsx` - Hybrid map component (react-native-maps + Amap API for reverse geocoding)
 - `app/_layout.tsx` - Root layout with providers and initialization
 - `contexts/AppContext.tsx` - Global app state, user initialization, database setup
 - `app/publish.tsx` - Pet information publishing page
 - `app/(tabs)/index.tsx` - Home page with map view
+- `config/amap-api-keys.ts` - Amap API configuration for reverse geocoding
 
 ## Common Issues & Solutions
 
@@ -133,9 +142,15 @@ All components use inline style objects referencing theme colors from `constants
 
 **Transaction errors**: Use prepared statements with `prepareAsync()` + `executeAsync()` instead of `db.transaction()`.
 
-**Map display issues**: The custom MapView uses calculated screen positions based on latitude/longitude deltas. See `components/MapView.tsx` for implementation.
+**Location getting stuck**: If the app shows "正在获取您的位置" indefinitely, this indicates a location request that's waiting for user interaction. The new `NativeMapView.tsx` implements automatic retry (up to 3 times) to prevent this issue.
+
+**Location permissions**: Ensure proper permission handling in `app.json`:
+- iOS: Configure `NSLocationWhenInUseUsageDescription` and `NSLocationAlwaysAndWhenInUseUsageDescription`
+- Android: Requires `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION` permissions
 
 **Distance calculations**: Implemented in JavaScript (Haversine formula) due to SQLite SQL function limitations.
+
+**Amap API failures**: If reverse geocoding fails, the app will still function with coordinates only. Check `config/amap-api-keys.ts` for valid API key configuration.
 
 ## Current Branch Status
 
@@ -156,6 +171,9 @@ All components use inline style objects referencing theme colors from `constants
 - `README.md` - Project overview and quick start
 - `DEVELOPMENT.md` - Detailed technical documentation (architecture, database schema, known issues)
 - `BRANCH_STRATEGY.md` - Git workflow and branch management
+- `NATIVE_MAP_IMPLEMENTATION.md` - Comprehensive guide to the hybrid map implementation (react-native-maps + Amap API)
+- `QUICK_START_GUIDE.md` - Quick testing guide for the new map implementation
+- `MAP_FEATURES.md` - Legacy documentation of AmapWebView implementation (for reference)
 
 ## Dependencies
 
@@ -166,6 +184,7 @@ Key packages:
 - `expo-sqlite` ^16.0.9
 - `expo-location` ^19.0.7
 - `expo-image-picker` ^17.0.8
+- `react-native-maps` ^1.20.1 (hybrid map implementation with system default maps)
 - `typescript` ~5.9.2
 
 ## Environment

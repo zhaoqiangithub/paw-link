@@ -6,7 +6,9 @@
       "WebFetch(domain:www.rescueme.org)",
       "Bash(tree:*)",
       "WebFetch(domain:lbs.amap.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(npm view:*)",
+      "Bash(pip3:*)"
     ],
     "deny": [],
     "ask": []

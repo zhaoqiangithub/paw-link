@@ -32,6 +32,7 @@ interface AddressSearchProps {
   }) => void;
   placeholder?: string;
   style?: any;
+  searchResults?: SearchResult[];
 }
 
 export const AddressSearch: React.FC<AddressSearchProps> = ({
@@ -39,6 +40,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
   onLocationSelect,
   placeholder = '搜索地址或地点',
   style,
+  searchResults,
 }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -78,6 +80,18 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
 
     return () => clearTimeout(timeoutId);
   }, [query, searchAddress]);
+
+  useEffect(() => {
+    if (typeof searchResults !== 'undefined') {
+      setIsSearching(false);
+      setResults(searchResults);
+      if (query.trim().length > 0) {
+        setShowResults(true);
+      } else if (searchResults.length === 0) {
+        setShowResults(false);
+      }
+    }
+  }, [searchResults, query]);
 
   // 选择搜索结果
   const handleSelectResult = (result: SearchResult) => {
