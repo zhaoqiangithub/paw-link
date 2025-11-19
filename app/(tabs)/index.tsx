@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 
-import { MapComponent } from '@/components/MapView';
+import { NativeMapView } from '@/components/NativeMapView';
 import { ThemedView } from '@/components/themed-view';
 import { useLocation } from '@/hooks/use-location';
 import { PetInfo, PetInfoDB } from '@/lib/database';
@@ -26,21 +26,52 @@ const STATUS_FILTERS = [
 
 const DISTANCE_OPTIONS = [5, 10, 20];
 
+
+const STATUS_FILTERS = [
+  { key: 'for_adoption', label: '待领养' },
+  { key: 'needs_rescue', label: '需救助' },
+  { key: 'emergency', label: '紧急' },
+];
+
+const DISTANCE_OPTIONS = [5, 10, 20];
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { location, error: locationError } = useLocation();
+  const { location, error: locationError, getCurrentLocation } = useLocation();
   const [statusFilter, setStatusFilter] = useState<string>('for_adoption');
   const [distance, setDistance] = useState<number>(5);
   const [petInfos, setPetInfos] = useState<PetInfo[]>([]);
+  const [mapLocation, setMapLocation] = useState<{ latitude: number; longitude: number; address?: string } | null>(null);
+
+  // 处理地图位置变化
+  const handleMapLocationChange = (loc: { latitude: number; longitude: number; address?: string }) => {
+    console.log('Map location changed:', loc);
+    setMapLocation(loc);
+  };
+
+  // 处理地图定位成功
+  const handleMapLocationSuccess = (loc: { latitude: number; longitude: number; address?: string }) => {
+    console.log('Map location success:', loc);
+    setMapLocation(loc);
+  };
+
+  // 处理地图定位失败
+  const handleMapLocationError = (error: { message: string; code?: number }) => {
+    console.error('Map location error:', error.message);
+    // 可以在这里显示错误提示或使用 useLocation 的结果作为备选
+  };
+
+  // 使用地图位置或定位钩子位置
+  const currentLocation = mapLocation || location;
 
   useEffect(() => {
     const loadPets = async () => {
-      if (!location) return;
+      if (!currentLocation) return;
       try {
         const data = await PetInfoDB.getList({
           status: statusFilter as PetInfo['status'],
-          latitude: location.latitude,
-          longitude: location.longitude,
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
           maxDistance: distance,
           days: 30,
           limit: 200,
@@ -51,7 +82,7 @@ export default function HomeScreen() {
       }
     };
     loadPets();
-  }, [location, statusFilter, distance]);
+  }, [currentLocation, statusFilter, distance]);
 
   const cycleDistance = () => {
     const idx = DISTANCE_OPTIONS.indexOf(distance);
@@ -63,69 +94,24 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       {/* 地图托底 - 全屏显示 */}
       <View style={styles.mapContainer}>
-        <MapComponent
-          onMarkerPress={(petInfo) =>
+        <NativeMapView
+          onMarkerClick={(petInfo) =>
             router.push({ pathname: '/pet-detail', params: { id: petInfo.id } })
           }
+          onLocationSuccess={handleMapLocationSuccess}
+          onLocationError={handleMapLocationError}
+          onMapLoaded={() => console.log('Map loaded')}
+          pets={petInfos}
         />
       </View>
-
-      {/* 顶部导航栏 */}
-      <LinearGradient colors={Gradients.blue} style={[styles.topNav, { paddingTop: insets.top + 8 }]}>
-        <View style={styles.heroHeader}>
-          <View>
-            <Text style={styles.brand}>PawLink</Text>
-            <Text style={styles.locationLabel}>
-              我在 {location?.address || '定位中...'}
-            </Text>
-          </View>
-          <View style={styles.heroActions}>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="notifications-outline" size={20} color="#fff" />
-              <View style={styles.badge} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="person-circle-outline" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={18} color="#9CA3AF" />
-          <Text style={styles.searchPlaceholder}>搜索附近的宠物...</Text>
-          <Ionicons name="options-outline" size={18} color="#9CA3AF" />
-        </View>
-
-        <View style={styles.statusRow}>
-          {STATUS_FILTERS.map((item) => {
-            const active = statusFilter === item.key;
-            return (
-              <TouchableOpacity
-                key={item.key}
-                style={[styles.statusChip, active && styles.statusChipActive]}
-                onPress={() => setStatusFilter(item.key)}
-              >
-                {item.key === 'for_adoption' && (
-                  <Ionicons name="heart-outline" size={12} color={active ? '#3B82F6' : 'rgba(255,255,255,0.9)'} />
-                )}
-                {item.key === 'needs_rescue' && (
-                  <Ionicons name="medkit-outline" size={12} color={active ? '#3B82F6' : 'rgba(255,255,255,0.9)'} />
-                )}
-                {item.key === 'emergency' && (
-                  <Ionicons name="warning-outline" size={12} color={active ? '#3B82F6' : 'rgba(255,255,255,0.9)'} />
-                )}
-                <Text style={[styles.statusChipText, active && styles.statusChipTextActive]}>
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+      <View style={styles.overlayContainer}>
+        <LinearGradient colors={['transparent', 'rgba(0,0,0,0.5)']} style={styles.gradient}>
           <TouchableOpacity style={styles.distanceChip} onPress={cycleDistance}>
             <Ionicons name="location-outline" size={14} color="#fff" />
             <Text style={styles.distanceChipText}>{distance}km内</Text>
           </TouchableOpacity>
-        </View>
-      </LinearGradient>
+        </LinearGradient>
+      </View>
 
       {/* 宠物信息卡片 - 悬浮在地图上方 */}
       <View style={styles.petCarouselContainer}>
@@ -188,7 +174,7 @@ export default function HomeScreen() {
       <View style={styles.mapLocationChip}>
         <Ionicons name="location" size={16} color="#2C6CFF" />
         <Text style={styles.mapLocationText}>
-          我在 {location?.address || '正在定位'}
+          我在 {currentLocation?.address || '正在定位'}
         </Text>
       </View>
 
@@ -197,6 +183,12 @@ export default function HomeScreen() {
         <View style={styles.errorBanner}>
           <Ionicons name="warning-outline" size={16} color="#FF6B6B" />
           <Text style={styles.errorText}>{locationError}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => getCurrentLocation()}
+          >
+            <Text style={styles.retryButtonText}>重试</Text>
+          </TouchableOpacity>
         </View>
       )}
     </ThemedView>
@@ -510,5 +502,17 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#DC2626',
     fontSize: 12,
+    flex: 1,
+  },
+  retryButton: {
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

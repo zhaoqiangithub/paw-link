@@ -84,7 +84,7 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
     }
   };
 
-  // 简化的定位系统
+  // 定位系统
   const getCurrentLocation = useCallback(async () => {
     setLoading(true);
     setLocationMethod('none');
@@ -102,14 +102,22 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
           throw new Error('PERMISSION_DENIED');
         }
 
-        // 2. 获取位置
-        const locationResult = await Location.getCurrentPositionAsync({
+        // 2. 创建超时Promise
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('LOCATION_TIMEOUT')), 20000); // 20秒超时
+        });
+
+        // 3. 创建定位Promise
+        const locationPromise = Location.getCurrentPositionAsync({
           accuracy: Platform.OS === 'android'
             ? Location.Accuracy.High
             : Location.Accuracy.Balanced,
           timeInterval: 8000,
           distanceInterval: 10,
         });
+
+        // 4. 竞态处理：定位 vs 超时
+        const locationResult = await Promise.race([locationPromise, timeoutPromise]);
 
         const { latitude, longitude, accuracy } = locationResult.coords;
         console.log(`✅ 原生定位成功，精度: ${accuracy}m`);
@@ -130,8 +138,9 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
 
           setUserLocation(locationData);
           onLocationSuccess?.(locationData);
+          console.log('✅ 地址获取成功:', address);
         } catch (geoError) {
-          console.warn('高德反向地理编码失败:', geoError);
+          console.warn('⚠️ 高德反向地理编码失败:', geoError);
           onLocationSuccess?.({ longitude, latitude });
         }
 
@@ -152,9 +161,11 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
           return;
         }
 
-        // 如果不是最后一次重试，等待后重试
+        // 超时或网络错误，重试
         if (retryCount < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          const delay = Math.min(1000 * retryCount, 3000); // 指数退避，最大3秒
+          console.log(`⏳ 等待 ${delay}ms 后重试...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
     }
@@ -163,7 +174,7 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
     console.log('⚠️ 所有自动定位尝试都失败');
     setLoading(false);
     onLocationError?.({
-      message: '无法获取位置信息，请手动选择位置',
+      message: '无法获取位置信息，请手动选择位置或检查网络设置',
       code: 4,
     });
 

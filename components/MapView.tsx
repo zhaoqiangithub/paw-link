@@ -3,15 +3,16 @@ import { StyleSheet, Dimensions, Alert } from 'react-native';
 import { PetInfo, PetInfoDB } from '@/lib/database';
 import { Colors } from '@/constants/theme';
 import { useApp } from '@/contexts/AppContext';
-import NativeMapView from './NativeMapView';
+import { AmapWebView, LocationInfo } from './AmapWebView';
 
 const { width, height } = Dimensions.get('window');
 
 interface MapViewProps {
   onMarkerPress?: (petInfo: PetInfo) => void;
+  onLocationChange?: (location: LocationInfo) => void;
 }
 
-export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress }) => {
+export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress, onLocationChange }) => {
   const { user } = useApp();
   const [petInfos, setPetInfos] = useState<PetInfo[]>([]);
   const [currentLocation, setCurrentLocation] = useState<{
@@ -50,13 +51,11 @@ export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress }) => {
   };
 
   // 处理定位成功
-  const handleLocationSuccess = (loc: {
-    longitude: number;
-    latitude: number;
-    address?: string;
-  }) => {
+  const handleLocationSuccess = (loc: LocationInfo) => {
     console.log('✅ Location success:', loc);
     setCurrentLocation(loc);
+    // 通知父组件位置变化
+    onLocationChange?.(loc);
   };
 
   // 处理定位错误
@@ -79,7 +78,7 @@ export const MapComponent: React.FC<MapViewProps> = ({ onMarkerPress }) => {
     : { longitude: 116.4074, latitude: 39.9042 };
 
   return (
-    <NativeMapView
+    <AmapWebView
       center={defaultCenter}
       zoom={16}
       pets={petInfos}

@@ -10,7 +10,7 @@ export interface LocationData {
 export const useLocation = () => {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // 改为false，默认不自动加载
 
   // 更强的Web平台检测
   const isWeb = (() => {
@@ -69,37 +69,32 @@ export const useLocation = () => {
       return;
     }
 
-    // 检查是否为模拟器（通过Android模拟器错误）
-    try {
-      await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-    } catch (err: any) {
-      const errorCode = err?.code;
-      console.log('Location error code:', errorCode);
-      if (errorCode === 'API_UNAVAILABLE' || errorCode === 17) {
-        console.log('⚠️ API_UNAVAILABLE error - likely simulator or no GPS hardware');
-        setError('API_UNAVAILABLE: 此设备不支持GPS，请使用真机或高德地图定位');
-        setLoading(false);
-        return;
-      }
-    }
+    console.log('✅ Non-web platform, getting current location...');
+    setLoading(true);
+    setError(null);
 
     try {
-      console.log('✅ Real device detected, getting current location...');
-      setLoading(true);
-      setError(null);
-
       const hasPermission = await requestLocationPermission();
       if (!hasPermission) {
         return;
       }
 
-      const locationResult = await Location.getCurrentPositionAsync({
+      // 添加超时控制
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('TIMEOUT')), 15000); // 15秒超时
+      });
+
+      const locationPromise = Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
-        timeInterval: 5000,
+        timeInterval: 8000,
         distanceInterval: 10
       });
 
+      const locationResult = await Promise.race([locationPromise, timeoutPromise]);
+
       const { latitude, longitude } = locationResult.coords;
+      console.log('✅ Location obtained:', { latitude, longitude });
+
       setLocation({ latitude, longitude });
 
       // 获取地址信息
@@ -129,9 +124,26 @@ export const useLocation = () => {
       }
 
       setLoading(false);
-    } catch (err) {
-      setError('获取位置失败');
+    } catch (err: any) {
       console.error('Error getting location:', err);
+      const errorCode = err?.code;
+      const errorMessage = err?.message;
+
+      if (errorMessage === 'TIMEOUT') {
+        setError('定位超时，请检查网络和GPS设置');
+      } else if (errorCode === 'API_UNAVAILABLE' || errorCode === 17) {
+        console.log('⚠️ API_UNAVAILABLE - might be simulator or GPS unavailable');
+        setError('此设备GPS不可用，请检查设备设置或手动选择位置');
+      } else if (errorCode === 'PERMISSION_DENIED') {
+        setError('定位权限被拒绝，请在设置中开启定位权限');
+      } else if (errorCode === 'POSITION_UNAVAILABLE') {
+        setError('无法获取位置信息，请检查GPS或网络连接');
+      } else if (errorCode === 'PLAY_SERVICES_NOT_AVAILABLE') {
+        setError('Google Play服务不可用，请使用高德地图定位');
+      } else {
+        setError('获取位置失败，请重试或手动选择位置');
+      }
+
       setLoading(false);
     }
   };
@@ -190,18 +202,10 @@ export const useLocation = () => {
     return value * Math.PI / 180;
   };
 
-  useEffect(() => {
-    // 检查是否为Web平台
-    const isWeb = typeof window !== 'undefined' && typeof document !== 'undefined';
-
-    if (!isWeb) {
-      console.log('Non-web platform detected, getting location automatically');
-      getCurrentLocation();
-    } else {
-      console.log('Web platform detected, skipping automatic location request');
-      setLoading(false);
-    }
-  }, []);
+  // 移除自动定位，让组件手动控制
+  // useEffect(() => {
+  //   // 不再自动获取定位，避免与地图组件冲突
+  // }, []);
 
   return {
     location,

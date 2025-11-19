@@ -8,7 +8,13 @@
       "WebFetch(domain:lbs.amap.com)",
       "WebFetch(domain:github.com)",
       "Bash(npm view:*)",
-      "Bash(pip3:*)"
+      "Bash(pip3:*)",
+      "mcp__serena__replace_symbol_body",
+      "mcp__serena__insert_after_symbol",
+      "mcp__serena__insert_before_symbol",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(head:*)"
     ],
     "deny": [],
     "ask": []
