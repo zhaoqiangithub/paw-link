@@ -14,7 +14,6 @@ import { Image } from 'expo-image';
 
 import { NativeMapView } from '@/components/NativeMapView';
 import { ThemedView } from '@/components/themed-view';
-import { useLocation } from '@/hooks/use-location';
 import { PetInfo, PetInfoDB } from '@/lib/database';
 import { Gradients, Colors, PetStatusBadges } from '@/constants/theme';
 
@@ -26,22 +25,13 @@ const STATUS_FILTERS = [
 
 const DISTANCE_OPTIONS = [5, 10, 20];
 
-
-const STATUS_FILTERS = [
-  { key: 'for_adoption', label: '待领养' },
-  { key: 'needs_rescue', label: '需救助' },
-  { key: 'emergency', label: '紧急' },
-];
-
-const DISTANCE_OPTIONS = [5, 10, 20];
-
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { location, error: locationError, getCurrentLocation } = useLocation();
   const [statusFilter, setStatusFilter] = useState<string>('for_adoption');
   const [distance, setDistance] = useState<number>(5);
   const [petInfos, setPetInfos] = useState<PetInfo[]>([]);
   const [mapLocation, setMapLocation] = useState<{ latitude: number; longitude: number; address?: string } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   // 处理地图位置变化
   const handleMapLocationChange = (loc: { latitude: number; longitude: number; address?: string }) => {
@@ -58,20 +48,23 @@ export default function HomeScreen() {
   // 处理地图定位失败
   const handleMapLocationError = (error: { message: string; code?: number }) => {
     console.error('Map location error:', error.message);
-    // 可以在这里显示错误提示或使用 useLocation 的结果作为备选
+    setLocationError(error.message);
   };
 
-  // 使用地图位置或定位钩子位置
-  const currentLocation = mapLocation || location;
+  // 重试定位
+  const handleRetryLocation = () => {
+    setLocationError(null);
+    setMapLocation(null); // 清除位置以触发重新定位
+  };
 
   useEffect(() => {
     const loadPets = async () => {
-      if (!currentLocation) return;
+      if (!mapLocation) return;
       try {
         const data = await PetInfoDB.getList({
           status: statusFilter as PetInfo['status'],
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude,
+          latitude: mapLocation.latitude,
+          longitude: mapLocation.longitude,
           maxDistance: distance,
           days: 30,
           limit: 200,
@@ -82,7 +75,7 @@ export default function HomeScreen() {
       }
     };
     loadPets();
-  }, [currentLocation, statusFilter, distance]);
+  }, [mapLocation, statusFilter, distance]);
 
   const cycleDistance = () => {
     const idx = DISTANCE_OPTIONS.indexOf(distance);
@@ -102,6 +95,7 @@ export default function HomeScreen() {
           onLocationError={handleMapLocationError}
           onMapLoaded={() => console.log('Map loaded')}
           pets={petInfos}
+          key={`map-${mapLocation ? 'ready' : 'loading'}`}  {/* 强制重新渲染以便重试 */}
         />
       </View>
       <View style={styles.overlayContainer}>
@@ -174,7 +168,7 @@ export default function HomeScreen() {
       <View style={styles.mapLocationChip}>
         <Ionicons name="location" size={16} color="#2C6CFF" />
         <Text style={styles.mapLocationText}>
-          我在 {currentLocation?.address || '正在定位'}
+          我在 {mapLocation?.address || locationError ? '定位失败' : '正在定位'}
         </Text>
       </View>
 
@@ -185,7 +179,7 @@ export default function HomeScreen() {
           <Text style={styles.errorText}>{locationError}</Text>
           <TouchableOpacity
             style={styles.retryButton}
-            onPress={() => getCurrentLocation()}
+            onPress={handleRetryLocation}
           >
             <Text style={styles.retryButtonText}>重试</Text>
           </TouchableOpacity>

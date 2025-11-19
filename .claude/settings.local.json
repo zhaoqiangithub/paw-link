@@ -14,7 +14,8 @@
       "mcp__serena__insert_before_symbol",
       "Bash(wc:*)",
       "Bash(grep:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(openspec:*)"
     ],
     "deny": [],
     "ask": []

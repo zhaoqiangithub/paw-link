@@ -86,6 +86,7 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
 
   // 定位系统
   const getCurrentLocation = useCallback(async () => {
+    console.log('🚀 getCurrentLocation called');
     setLoading(true);
     setLocationMethod('none');
     let retryCount = 0;
@@ -144,7 +145,9 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
           onLocationSuccess?.({ longitude, latitude });
         }
 
+        console.log('✅ 定位完成，设置 loading = false');
         setLoading(false);
+        setLocationMethod('native');
         return;
 
       } catch (error: any) {
@@ -153,7 +156,9 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
 
         // 权限问题直接退出
         if (error.message === 'PERMISSION_DENIED') {
+          console.log('❌ 权限被拒绝，设置 loading = false');
           setLoading(false);
+          setLocationMethod('none');
           onLocationError?.({
             message: '定位权限被拒绝，请手动选择位置',
             code: 1,
@@ -171,8 +176,9 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
     }
 
     // 所有重试都失败
-    console.log('⚠️ 所有自动定位尝试都失败');
+    console.log('⚠️ 所有自动定位尝试都失败, 设置 loading = false');
     setLoading(false);
+    setLocationMethod('none');
     onLocationError?.({
       message: '无法获取位置信息，请手动选择位置或检查网络设置',
       code: 4,
@@ -187,6 +193,7 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
 
     // 如果有初始位置，移动到该位置
     if (initialLocation) {
+      console.log('✅ 使用初始位置:', initialLocation);
       setRegion(prev => ({
         ...prev,
         longitude: initialLocation.longitude,
@@ -196,9 +203,12 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
         longitude: initialLocation.longitude,
         latitude: initialLocation.latitude,
       });
+      // 如果有初始位置，不需要自动定位
+      return;
     }
 
-    // 自动尝试定位
+    // 自动尝试定位（仅在没有初始位置时）
+    console.log('🗺️ 地图已准备，开始自动定位');
     getCurrentLocation();
   }, [initialLocation, onMapLoaded, getCurrentLocation]);
 
