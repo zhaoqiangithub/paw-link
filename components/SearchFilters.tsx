@@ -1,21 +1,33 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
+import { useAmap } from '@/hooks/use-amap';
+import { RegeoResult } from '@/lib/amap-service';
 
 export interface SearchFilters {
   type?: 'cat' | 'dog' | 'other';
   status?: 'needs_rescue' | 'for_adoption' | 'emergency';
   distance?: number;
   days?: number;
+  location?: {
+    longitude: number;
+    latitude: number;
+    address?: string;
+  };
 }
 
 interface SearchFiltersProps {
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
   onClearFilters: () => void;
+  userLocation?: {
+    longitude: number;
+    latitude: number;
+  };
+  onLocationSelect?: (location: { longitude: number; latitude: number; address: string }) => void;
 }
 
 const PET_TYPES = [
@@ -51,13 +63,155 @@ export const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({
   filters,
   onFiltersChange,
   onClearFilters,
+  userLocation,
+  onLocationSelect
 }) => {
   const [showFilters, setShowFilters] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchResults, setSearchResults] = useState<RegeoResult[]>([]);
+  const { searchPOI, inputTips, loading } = useAmap();
 
-  const hasActiveFilters = !!(filters.type || filters.status || filters.distance || filters.days);
+  const hasActiveFilters = !!(filters.type || filters.status || filters.distance || filters.days || filters.location);
+
+  // 处理搜索
+  const handleSearch = async (keyword: string) => {
+    if (!keyword.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      // 先尝试输入提示
+      const tips = await inputTips({
+        keyword: keyword.trim(),
+        location: userLocation,
+        datatype: 'poi'
+      });
+
+      setSearchResults(tips);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error('搜索失败:', error);
+      setSearchResults([]);
+    }
+  };
+
+  // 选择搜索结果
+  const handleSelectLocation = (result: RegeoResult) => {
+    if (result.location && onLocationSelect) {
+      onLocationSelect({
+        longitude: result.location.longitude,
+        latitude: result.location.latitude,
+        address: result.address || result.name || ''
+      });
+
+      // 更新筛选条件
+      onFiltersChange({
+        ...filters,
+        location: {
+          longitude: result.location.longitude,
+          latitude: result.location.latitude,
+          address: result.address || result.name || ''
+        }
+      });
+
+      setSearchKeyword(result.name || result.address || '');
+      setShowSearchResults(false);
+    }
+  };
+
+  // 清除位置
+  const handleClearLocation = () => {
+    onFiltersChange({
+      ...filters,
+      location: undefined
+    });
+    setSearchKeyword('');
+    setShowSearchResults(false);
+  };
+
+  // 搜索防抖
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleSearch(searchKeyword);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchKeyword, userLocation]);
 
   return (
     <ThemedView style={styles.container}>
+      {/* 搜索框 */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputContainer}>
+          <Ionicons name="search-outline" size={20} color={Colors.light.icon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="搜索地点、POI..."
+            value={searchKeyword}
+            onChangeText={setSearchKeyword}
+            onFocus={() => {
+              if (searchResults.length > 0) {
+                setShowSearchResults(true);
+              }
+            }}
+          />
+          {searchKeyword.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchKeyword('')}>
+              <Ionicons name="close-circle" size={16} color={Colors.light.icon} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* 搜索结果列表 */}
+      {showSearchResults && searchResults.length > 0 && (
+        <View style={styles.searchResultsContainer}>
+          <ScrollView style={styles.searchResultsList}>
+            {searchResults.map((result, index) => (
+              <TouchableOpacity
+                key={result.id || index}
+                style={styles.searchResultItem}
+                onPress={() => handleSelectLocation(result)}
+              >
+                <Ionicons name="location-outline" size={16} color={Colors.light.tint} />
+                <View style={styles.searchResultContent}>
+                  <Text style={styles.searchResultName}>
+                    {result.name || '未知地点'}
+                  </Text>
+                  <Text style={styles.searchResultAddress} numberOfLines={1}>
+                    {result.address || ''}
+                  </Text>
+                </View>
+                {result.distance && (
+                  <Text style={styles.searchResultDistance}>
+                    {(result.distance / 1000).toFixed(1)}km
+                  </Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* 位置信息显示 */}
+      {filters.location && (
+        <View style={styles.selectedLocationContainer}>
+          <View style={styles.selectedLocationInfo}>
+            <Ionicons name="location" size={16} color={Colors.light.tint} />
+            <Text style={styles.selectedLocationText} numberOfLines={1}>
+              {filters.location.address || '已选择位置'}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={handleClearLocation}>
+            <Ionicons name="close" size={20} color={Colors.light.icon} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* 筛选按钮 */}
       <TouchableOpacity
         style={styles.filterButton}
         onPress={() => setShowFilters(!showFilters)}
@@ -195,6 +349,89 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.background,
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  searchContainer: {
+    marginBottom: 8,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.light.background,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.light.icon,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: Colors.light.text,
+    padding: 0,
+  },
+  searchResultsContainer: {
+    maxHeight: 200,
+    backgroundColor: Colors.light.background,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.light.icon,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  searchResultsList: {
+    maxHeight: 200,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.icon,
+    gap: 10,
+  },
+  searchResultContent: {
+    flex: 1,
+  },
+  searchResultName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.light.text,
+    marginBottom: 2,
+  },
+  searchResultAddress: {
+    fontSize: 12,
+    color: Colors.light.icon,
+  },
+  searchResultDistance: {
+    fontSize: 12,
+    color: Colors.light.tint,
+    fontWeight: '500',
+  },
+  selectedLocationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.light.background,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.light.tint,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 8,
+    gap: 8,
+  },
+  selectedLocationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 8,
+  },
+  selectedLocationText: {
+    flex: 1,
+    fontSize: 14,
+    color: Colors.light.text,
   },
   filterButton: {
     flexDirection: 'row',

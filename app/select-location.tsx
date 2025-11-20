@@ -115,27 +115,35 @@ export default function SelectLocationScreen() {
     sendSelectedLocationToMap(location.longitude, location.latitude, { center: true });
   }, [sendSelectedLocationToMap]);
 
-  // 定位失败回调
-  const handleLocationError = useCallback((error: { message: string }) => {
+  // 定位失败回调（增强版 - 支持重试和原生定位降级）
+  const handleLocationError = useCallback((error: { message: string; code?: string | number }) => {
     console.error('❌ 选择位置页面定位失败:', error.message);
     setIsLocating(false);
 
+    // 解析错误信息
     let errorTitle = '定位失败';
-    let errorMessage = error.message;
+    let errorMessage = error.message || '未知错误';
+    let showRetryButton = true;
 
-    if (error.message.includes('权限')) {
+    // 检查是否已尝试原生定位
+    if (error.message.includes('已尝试所有方案') || error.message.includes('原生定位')) {
+      showRetryButton = true;
+      errorTitle = '定位失败';
+      errorMessage = error.message;
+    } else if (error.message.includes('权限')) {
       errorTitle = '定位权限被拒绝';
-      errorMessage = '请在设置中开启定位权限';
+      errorMessage = '请在设置中允许PawLink访问定位服务：\n设置 → 应用 → PawLink → 权限 → 定位 → 允许';
     } else if (error.message.includes('超时')) {
       errorTitle = '定位超时';
-      errorMessage = '请检查网络连接和GPS设置';
+      errorMessage = '定位超时。请检查：\n1. GPS是否开启\n2. 网络连接是否正常\n3. 是否有遮挡（如室内、金属物体附近）';
     }
 
     Alert.alert(
       errorTitle,
       errorMessage,
       [
-        { text: '重试', onPress: handleRelocate },
+        ...(showRetryButton ? [{ text: '重试', onPress: handleRelocate }] : []),
+        { text: '手动选择', onPress: () => console.log('手动选择位置') },
         { text: '取消', style: 'cancel' },
       ]
     );

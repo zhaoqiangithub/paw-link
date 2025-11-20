@@ -1,0 +1,3473 @@
+<!doctype html><html><head><title>地理编码与逆地理编码-服务插件和工具-进阶教程-地图 JS API 2.0 | 高德地图API</title><meta charset="utf-8"><meta name="renderer" content="webkit"><meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1"><meta name="baidu-site-verification" content="codeva-1igbja2BZK"><meta name="keywords" content="地理编码与逆地理编码-服务插件和工具-进阶教程-地图 JS API 2.0"><meta name="description" content="亲手试一试"><meta name="aes-config" content="pid=lbs-dev-yuntu&user_type=101&uid=&username="><link rel="shortcut icon" href="//a.amap.com/pc/static/favicon.ico" type="image/x-icon"><link rel="stylesheet" href="//at.alicdn.com/t/a/font_110998_hvf1jf47qsh.css"><script>var _hmt = _hmt || [];
+    (function () {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?c8ac07c199b1c09a848aaab761f9f909";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();</script><script type="text/javascript">window._AMapSecurityConfig = {
+      serviceHost: location.origin + '/AMapService'
+    };</script><link href="/public/src/assets/main.umd.936c7992ea8f436d5315.css" rel="stylesheet"></head><body data-type="body-new" data-os="body-os-" data-device="body-pc" data-brower="body-browser-" class="page-type-doc page-doc-doc"><script src="//g.alicdn.com/??AWSC/AWSC/awsc.js"></script><script type="text/javascript" id="beacon-aplus" src="//g.alicdn.com/alilog/mlog/aplus_v2.js" exparams="clog=o&aplus&sidx=aplusSidx&ckx=aplusCkx"></script><link class="_inject-css" rel="stylesheet" href="//a.amap.com/lbs-dev-yuntu/static/web/views/doc/doc/doc-doc.umd.9b8ed367101f9fc65012.css">  <div class="page-body page-body-pc" style="height: calc(100% - 0px);">
+
+<div id="frosted_mask" class="frosted_mask"></div>
+
+<!-- header -->
+<header id="frosted_header" class="frosted_header">
+  <aside class="frosted_logo_grandpa frosted_core">
+    <div class="frosted_logo_father">
+      <a class="frosted_logo" href="/">
+        <embed class="frosted_logo_content" src="/public/img/header/logo_2023.svg" type="image/svg+xml" />
+        <embed class="frosted_logo_content darken" src="/public/img/header/logo_darken_2023.svg" type="image/svg+xml" />
+      </a>
+    </div>
+  </aside>
+
+  <!-- .frosted_core -->
+  <div class="frosted_core frosted_main_core">
+    <div class="user">
+  <div class="user_item console_enter">
+    <a href="javascript:void(0)">控制台</a>
+  </div>
+  <div class="user_item user_area">
+    <div class="not_login">
+      <a class="sign_up" href="javascript:void(0)">
+        <span>登录</span>
+      </a>
+      <a class="sign_in" target="_blank" href="/dev/id/">
+        <span>注册<i class="iconfont icon-link"></i></span>
+      </a>
+      <a class="mobile_sign_in mobile" href="//id.amap.com?type=spa&ref=https://lbs.amap.com/api/javascript-api-v2/guide/services/geocoder">
+        <span class="iconfont icon-iconyonghu"></span>
+      </a>
+    </div>
+    <div class="has_login hide">
+      <div class="user_info">
+        <img class="avatar" src="https://a.amap.com/pc/static/img/amaplogo.png" alt="">
+        <div class="red-dot hide"></div>
+      </div>
+      <ul class="user_dropdown">
+        <li class="dropdown_item user_ctrl">
+          <div class="nickname"></div>
+          <div class="sign_out">退出</div>
+        </li>
+        <li class="dropdown_item msg_item">
+          <a href="//console.amap.com/dev/message/inbox" target="_blank">
+            <span>我的消息</span>
+            <span class="msg_unread unread_count"><i class="msg_unread_count"></i></span>
+          </a>
+        </li>
+        <li class="dropdown_item consult_item">
+          <a href="//console.amap.com/dev/market/consult" target="_blank">
+            <span>云图市场</span>
+            <span class="consult_unread unread_count"><i class="consult_unread_count"></i></span>
+          </a>
+        </li>
+        
+        <li class="dropdown_item">
+          
+            <a href="//console.amap.com/dev/key">
+              
+              <span>应用管理</span>
+            </a>
+        </li>
+        
+        <li class="dropdown_item">
+          
+          <a target="_blank" href="https://geohub.amap.com">
+            
+              <span>GeoHUB</span>
+            </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    <!-- nav -->
+    
+
+<!-- nav -->
+<nav id="frosted_nav" class="frosted_nav">
+  
+  <div
+    class="frosted_nav_item  ">
+    <a class="hover_dropdown" 
+      href="javascript:void(0)">
+      <span class="nav_title"> 产品介绍</span>
+      
+      <span class="icon-down-arrow"></span>
+      
+    </a>
+    
+    <div class="children dropdown_item nav_left">
+      <div class="children_core">
+        <span class="title_box">
+          <span class="title_box_core">
+            
+            <strong>产品介绍</strong>
+            
+            
+            <small>高德开放平台产品介绍</small>
+            
+            
+            <a href="/api" >
+              查看全部文档 <span class="iconfont icon-link"></span>
+            </a>
+            
+          </span>
+        </span>
+
+        <ul class="dropdown_columns dropdown_height_mark dropdown_flex" style="max-height:700px">
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-loc"></i>
+              </span>
+              <span>
+                搜索定位
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/harmonyosnext-location-sdk">
+                  <strong class="columns_black_title">
+                    鸿蒙星河版定位SDK
+                    
+                    <span class="link_tag"><i>HOT</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">鸿蒙星河版定位SDK</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/product/search#/">
+                  <strong class="columns_black_title">
+                    搜索
+                    
+                    <span class="link_tag"><i>HOT</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">位置、周边、行政区、ID等查询接口</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                  
+                  <a class="columns_link"  href="/api/webservice/guide/api/search">
+                    API
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/javascript-api-v2/tutorails/search-poi">
+                    JS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/android-sdk/guide/map-data/poi">
+                    Android
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/ios-sdk/guide/map-data/poi">
+                    iOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/product/locate#/">
+                  <strong class="columns_black_title">
+                    定位
+                    
+                    <span class="link_tag"><i>HOT</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">基于LBS的定位服务</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                  
+                  <a class="columns_link"  href="/api/webservice/guide/api/ipconfig">
+                    API
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/android-location-sdk/locationsummary/">
+                    Android
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/ios-location-sdk/summary/">
+                    iOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/webservice/guide/api/georegeo">
+                  <strong class="columns_black_title">
+                    地理/逆地理编码
+                    
+                  </strong>
+                  <small class="columns_desc">位置名称与经纬度之间转换服务</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                  
+                  <a class="columns_link"  href="/api/webservice/guide/api/georegeo">
+                    API
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/javascript-api-v2/guide/services/geocoder">
+                    JS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/android-sdk/guide/map-data/geo">
+                    Android
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/ios-sdk/guide/map-data/geo">
+                    iOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/track/lieying-kaifa/api/track_fence">
+                  <strong class="columns_black_title">
+                    地理围栏
+                    
+                  </strong>
+                  <small class="columns_desc">虚拟空间围栏服务</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                  
+                  <a class="columns_link"  href="/api/track/lieying-kaifa/api/track_fence">
+                    API
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/android-location-sdk/guide/additional-func/local-geofence">
+                    Android
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/ios-location-sdk/guide/additional-func/local-geofence">
+                    iOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/webservice/guide/api/weatherinfo">
+                  <strong class="columns_black_title">
+                    天气查询
+                    
+                  </strong>
+                  <small class="columns_desc">查询目标区域当前/未来天气</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/webservice/guide/api-advanced/hardware-location">
+                  <strong class="columns_black_title">
+                    智能硬件定位
+                    
+                  </strong>
+                  <small class="columns_desc">通过基站、Wifi获取位置信息</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-nav"></i>
+              </span>
+              <span>
+                路线导航
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/harmonyosnext-navi-sdk/summary">
+                  <strong class="columns_black_title">
+                    鸿蒙星河版导航SDK
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">鸿蒙星河版导航SDK</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/product/navigation#/">
+                  <strong class="columns_black_title">
+                    导航
+                    
+                    <span class="link_tag"><i>HOT</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">轻松地在APP中加入导航能力</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                  
+                  <a class="columns_link"  href="/api/android-navi-sdk/summary/">
+                    Android
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/ios-navi-sdk/summary">
+                    iOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/product/path">
+                  <strong class="columns_black_title">
+                    路线规划
+                    
+                    <span class="link_tag"><i>HOT</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">提供步行、驾车等规划能力</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                  
+                  <a class="columns_link"  href="/api/webservice/guide/api/direction">
+                    API
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/javascript-api-v2/tutorails/car-dir">
+                    JS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/android-navi-sdk/guide/route-plan/drive-route-plan">
+                    Android
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/ios-navi-sdk/guide/route-plan/drive-route-plan">
+                    iOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/product/track-sdk">
+                  <strong class="columns_black_title">
+                    猎鹰服务
+                    
+                  </strong>
+                  <small class="columns_desc">提供专业轨迹管理服务</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                  
+                  <a class="columns_link"  href="/api/track/summary/">
+                    API
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/android-track/summary/">
+                    Android
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/ios-track/summary/">
+                    iOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/logistic-service/guide/wagon_path/truck-route-plan-basis">
+                  <strong class="columns_black_title">
+                    货车路径规划
+                    
+                  </strong>
+                  <small class="columns_desc">专业的货车路径规划服务</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                  
+                  <a class="columns_link"  href="/api/logistic-service/guide/wagon_path/truck-route-plan-basis">
+                    API
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/android-navi-sdk/guide/truck-navi/truck-route-guide">
+                    Android
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/ios-navi-sdk/guide/truck-navi/truck-route-guide">
+                    iOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/product/scope">
+                  <strong class="columns_black_title">
+                    智能调度引擎
+                    
+                  </strong>
+                  <small class="columns_desc">智能外勤调度，提升效益</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/logistic-service/summary">
+                  <strong class="columns_black_title">
+                    物流服务
+                    
+                  </strong>
+                  <small class="columns_desc">提供智慧物流API服务接口</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/webservice/guide/api-advanced/bus-inquiry">
+                  <strong class="columns_black_title">
+                    公交信息查询
+                    
+                  </strong>
+                  <small class="columns_desc">查询公交信息</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/webservice/guide/api-advanced/traffic-situation-inquiry">
+                  <strong class="columns_black_title">
+                    交通路况查询
+                    
+                  </strong>
+                  <small class="columns_desc">查询交通态势情况</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/webservice/guide/api-advanced/advanced-path">
+                  <strong class="columns_black_title">
+                    高级路径规划
+                    
+                  </strong>
+                  <small class="columns_desc">高级路径规划等能力</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-map"></i>
+              </span>
+              <span>
+                地图产品
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/harmonyosnext-map3d-sdk">
+                  <strong class="columns_black_title">
+                    鸿蒙星河版地图SDK
+                    
+                    <span class="link_tag"><i>HOT</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">鸿蒙星河版-轻量地图SDK</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/javascript-api-v2/summary">
+                  <strong class="columns_black_title">
+                    动态地图
+                    
+                    <span class="link_tag"><i>HOT</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">动态地图展示、配置</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                  
+                  <a class="columns_link"  href="/api/lightmap/summary/">
+                    API
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/javascript-api-v2/summary">
+                    JS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/android-sdk/summary/">
+                    Android
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/ios-sdk/summary/">
+                    iOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/harmonyos-sdk/summary">
+                    HarmonyOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/javascript-api-v2/guide/map/3d-map">
+                  <strong class="columns_black_title">
+                    3D地图
+                    
+                    <span class="link_tag"><i>HOT</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">3D动态地图展示、配置</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/subway-api/subway-summary/">
+                  <strong class="columns_black_title">
+                    地铁图
+                    
+                  </strong>
+                  <small class="columns_desc">简单易用的移动端地铁线路图开发接口</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                  
+                  <a class="columns_link"  href="/api/subway-api/subway-summary/">
+                    JS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/amap-mobile/guide/android/subway">
+                    Android
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  <a class="columns_link"  href="/api/amap-mobile/guide/ios/subway">
+                    iOS
+                    <i class="iconfont icon-icon-tiaozhuan"></i>
+                  </a>
+                  
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/api/webservice/guide/api/staticmaps">
+                  <strong class="columns_black_title">
+                    静态地图
+                    
+                  </strong>
+                  <small class="columns_desc">灵活地将高德地图迁入应用网页</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+              <div class="columns_block  columns_block_table">
+                <a class="columns_black_link" 
+                  href="/product/terrain#/">
+                  <strong class="columns_black_title">
+                    3D地形图
+                    
+                  </strong>
+                  <small class="columns_desc">卫星地形图还原真实地形地貌</small>
+                </a>
+
+                
+                <span class="columns_link_wrapper">
+                  
+                </span>
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-tools"></i>
+              </span>
+              <span>
+                高级地图工具
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/solution/abroad">
+                  <strong class="columns_black_title">
+                    世界地图
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/product/geohub#mapstyle">
+                  <strong class="columns_black_title">
+                    自定义地图
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/product/loca#/">
+                  <strong class="columns_black_title">
+                    地图数据可视化 (LOCA)
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/product/geohub#/geohub">
+                  <strong class="columns_black_title">
+                    地图数据中心 (GeoHUB)
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/tools/picker">
+                  <strong class="columns_black_title">
+                    坐标拾取器
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/uri-api/summary/">
+                  <strong class="columns_black_title">
+                    高德地图URI Web
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/amap-mobile/summary/">
+                  <strong class="columns_black_title">
+                    高德地图URI APP
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/tools/gltf">
+                  <strong class="columns_black_title">
+                    三维模型转换
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/wx/summary/">
+                  <strong class="columns_black_title">
+                    微信小程序插件
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/flutter/summary">
+                  <strong class="columns_black_title">
+                    地图Flutter插件
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/tools/card">
+                  <strong class="columns_black_title">
+                    地图名片
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-wia"></i>
+              </span>
+              <span>
+                高德地图小程序
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/product/wia">
+                  <strong class="columns_black_title">
+                    地图小程序
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/product/wia?pos=customer_manage">
+                  <strong class="columns_black_title">
+                    客户管理
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/product/wia?pos=staff_manage">
+                  <strong class="columns_black_title">
+                    员工管理
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/product/wia?pos=delivery_effect_raising">
+                  <strong class="columns_black_title">
+                    送货提效
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/wia-openapi/product">
+                  <strong class="columns_black_title">
+                    地图小程序API
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+    
+  </div>
+  <!-- /.frosted_nav_item -->
+  
+  <div
+    class="frosted_nav_item  ">
+    <a class="hover_dropdown" 
+      href="javascript:void(0)">
+      <span class="nav_title"> 解决方案</span>
+      
+      <span class="icon-down-arrow"></span>
+      
+    </a>
+    
+    <div class="children dropdown_item nav_left">
+      <div class="children_core">
+        <span class="title_box">
+          <span class="title_box_core">
+            
+            <strong>解决方案</strong>
+            
+            
+            <small>提供各行业LBS解决方案</small>
+            
+            
+          </span>
+        </span>
+
+        <ul class="dropdown_columns dropdown_height_mark " style="max-height:px">
+          
+          <li>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/spatialIntelligence">
+                  <strong class="columns_black_title">
+                    空间智能
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">提供LBS领域的Agent解决方案</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/smartwatch">
+                  <strong class="columns_black_title">
+                    智能手表
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">提供智能守护与运动出行解决方案</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/smartglasses">
+                  <strong class="columns_black_title">
+                    智能眼镜
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">智能眼镜实时导航及智慧出行解决方案</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/abroad">
+                  <strong class="columns_black_title">
+                    世界地图
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">面向开发者提供全球范围内LBS服务</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/two-wheeled-vehicle">
+                  <strong class="columns_black_title">
+                    智能两轮车
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">合规精确的两轮车场景导航</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/mobilebanking">
+                  <strong class="columns_black_title">
+                    手机银行
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">提供手机银行APP地图应用</small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/bankmarketing">
+                  <strong class="columns_black_title">
+                    网格化营销
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">提供银行网格化营销场景应用</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="https://jiaotong.amap.com/">
+                  <strong class="columns_black_title">
+                    智慧交通
+                    
+                  </strong>
+                  <small class="columns_desc">优化交通资源配置，赋能智慧交通系统</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="https://mobility.amap.com/">
+                  <strong class="columns_black_title">
+                    出行
+                    
+                  </strong>
+                  <small class="columns_desc">提供网约车等出行场景解决方案</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/o2o">
+                  <strong class="columns_black_title">
+                    O2O
+                    
+                  </strong>
+                  <small class="columns_desc">到店、到家等多种O2O业务解决方案</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/onsite">
+                  <strong class="columns_black_title">
+                    上门服务调度
+                    
+                  </strong>
+                  <small class="columns_desc">提供上门业务调度解决方案</small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/agrodeveloping">
+                  <strong class="columns_black_title">
+                    三农场景可视化
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc">提供乡村振兴三农场景应用</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/social">
+                  <strong class="columns_black_title">
+                    社交
+                    
+                  </strong>
+                  <small class="columns_desc">社交应用位置服务解决方案</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/sport">
+                  <strong class="columns_black_title">
+                    运动
+                    
+                  </strong>
+                  <small class="columns_desc">运动类应用解决方案</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/smarthard">
+                  <strong class="columns_black_title">
+                    智能硬件
+                    
+                  </strong>
+                  <small class="columns_desc">智能硬件LBS解决方案</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/retail">
+                  <strong class="columns_black_title">
+                    零售铺货
+                    
+                  </strong>
+                  <small class="columns_desc">零售快消行业，渠道铺货解决方案</small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/truck">
+                  <strong class="columns_black_title">
+                    智慧物流
+                    
+                  </strong>
+                  <small class="columns_desc">针对物流行业提供解决方案</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/e-commerce">
+                  <strong class="columns_black_title">
+                    电商
+                    
+                  </strong>
+                  <small class="columns_desc">电商物流行业解决方案</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/product/smart-address">
+                  <strong class="columns_black_title">
+                    地址服务
+                    
+                  </strong>
+                  <small class="columns_desc">综合地址服务，满足客户全景化需求</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/product/me">
+                  <strong class="columns_black_title">
+                    企业智图
+                    
+                  </strong>
+                  <small class="columns_desc">一张图轻松管理企业数据</small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" target=_blank
+                  href="/solution/dispatch">
+                  <strong class="columns_black_title">
+                    智能派单
+                    
+                  </strong>
+                  <small class="columns_desc">一站式精准智能派单解决方案</small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+    
+  </div>
+  <!-- /.frosted_nav_item -->
+  
+  <div
+    class="frosted_nav_item  ">
+    <a class="hover_dropdown" 
+      href="javascript:void(0)">
+      <span class="nav_title"> 文档与支持</span>
+      
+      <span class="icon-down-arrow"></span>
+      
+    </a>
+    
+    <div class="children dropdown_item nav_left">
+      <div class="children_core">
+        <span class="title_box">
+          <span class="title_box_core">
+            
+            <strong>文档与支持</strong>
+            
+            
+            <small>高德开放平台开发文档与服务支持</small>
+            
+            
+            <a href="/api" >
+              查看全部文档 <span class="iconfont icon-link"></span>
+            </a>
+            
+          </span>
+        </span>
+
+        <ul class="dropdown_columns dropdown_height_mark dropdown_flex" style="max-height:400px">
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-api"></i>
+              </span>
+              <span>
+                API
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/webservice/summary">
+                  <strong class="columns_black_title">
+                    Web基础服务API
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/webservice/guide/api-advanced/search">
+                  <strong class="columns_black_title">
+                    Web高级服务API
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/logistic-service/summary">
+                  <strong class="columns_black_title">
+                    物流服务API
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/track/summary/">
+                  <strong class="columns_black_title">
+                    猎鹰服务 API
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-jsapi"></i>
+              </span>
+              <span>
+                JS API
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/javascript-api-v2">
+                  <strong class="columns_black_title">
+                    JS API
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/loca-v2">
+                  <strong class="columns_black_title">
+                    数据可视化JS API
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/lightmap">
+                  <strong class="columns_black_title">
+                    地图组件
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/uri-api">
+                  <strong class="columns_black_title">
+                    URI API
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/subway-api/subway-summary/">
+                  <strong class="columns_black_title">
+                    地铁图 JS API
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-android"></i>
+              </span>
+              <span>
+                Android 平台
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/android-sdk/summary/">
+                  <strong class="columns_black_title">
+                    Android 地图SDK
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/lightweight-android-sdk/summary">
+                  <strong class="columns_black_title">
+                    Android 轻量版地图SDK
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/android-location-sdk/locationsummary/">
+                  <strong class="columns_black_title">
+                    Android 定位SDK
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/android-navi-sdk/summary/">
+                  <strong class="columns_black_title">
+                    Android 导航SDK
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/android-track/summary/">
+                  <strong class="columns_black_title">
+                    Android 猎鹰SDK
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-ios"></i>
+              </span>
+              <span>
+                iOS 平台
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/ios-sdk/summary/">
+                  <strong class="columns_black_title">
+                    iOS 地图SDK
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/lightweight-ios-sdk/summary">
+                  <strong class="columns_black_title">
+                    iOS 轻量版地图SDK
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/ios-location-sdk/locationsummary/">
+                  <strong class="columns_black_title">
+                    iOS 定位SDK
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/ios-navi-sdk/summary/">
+                  <strong class="columns_black_title">
+                    iOS 导航SDK
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/ios-track/summary/">
+                  <strong class="columns_black_title">
+                    iOS 猎鹰SDK
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-harmonyos"></i>
+              </span>
+              <span>
+                鸿蒙星河版平台
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/harmonyosnext-map3d-sdk">
+                  <strong class="columns_black_title">
+                    鸿蒙星河版地图SDK
+                    
+                    <span class="link_tag"><i>HOT</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/harmonyosnext-location-sdk">
+                  <strong class="columns_black_title">
+                    鸿蒙星河版定位SDK
+                    
+                    <span class="link_tag"><i>HOT</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/harmonyosnext-navi-sdk/summary">
+                  <strong class="columns_black_title">
+                    鸿蒙星河版导航SDK
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-damoxing"></i>
+              </span>
+              <span>
+                大模型开发工具
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/api/mcp-server">
+                  <strong class="columns_black_title">
+                    MCP Server
+                    
+                    <span class="link_tag"><i>NEW</i></span>
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-server"></i>
+              </span>
+              <span>
+                服务与支持
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/faq">
+                  <strong class="columns_black_title">
+                    常见问题
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="https://console.amap.com/dev/ticket/type">
+                  <strong class="columns_black_title">
+                    创建工单
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/demo/center">
+                  <strong class="columns_black_title">
+                    示例中心
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/compliance-center/ability/sdk-security-review">
+                  <strong class="columns_black_title">
+                    合规中心
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/commercial">
+                  <strong class="columns_black_title">
+                    商用授权查询
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+    
+  </div>
+  <!-- /.frosted_nav_item -->
+  
+  <div
+    class="frosted_nav_item nav_less ">
+    <a class="hover_dropdown" 
+      href="javascript:void(0)">
+      <span class="nav_title"> 定价</span>
+      
+      <span class="icon-down-arrow"></span>
+      
+    </a>
+    
+    <div class="children dropdown_item ">
+      <div class="children_core">
+        <span class="title_box">
+          <span class="title_box_core">
+            
+            <strong>定价</strong>
+            
+            
+            <small>开放平台产品定价</small>
+            
+            
+            <a href="/upgrade#price" >
+              产品定价 <span class="iconfont icon-link"></span>
+            </a>
+            
+          </span>
+        </span>
+
+        <ul class="dropdown_columns dropdown_height_mark " style="max-height:px">
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-price"></i>
+              </span>
+              <span>
+                产品定价
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/upgrade#price">
+                  <strong class="columns_black_title">
+                    产品定价
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/upgrade#business">
+                  <strong class="columns_black_title">
+                    商用服务
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/upgrade#mapstyle">
+                  <strong class="columns_black_title">
+                    GeoHUB自定义地图
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/upgrade#mapdata">
+                  <strong class="columns_black_title">
+                    GeoHUB数据中心
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="columns_title">
+              <span class="iconfont_wrap">
+                <i class="iconfont icon-menu-shengji"></i>
+              </span>
+              <span>
+                产品升级
+              </span>
+            </div>
+            
+            <div class="columns_block_wrap">
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/upgrade#pro">
+                  <strong class="columns_black_title">
+                    高级能力
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/upgrade#me">
+                  <strong class="columns_black_title">
+                    企业智图SaaS
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+              <div class="columns_block ">
+                <a class="columns_black_link" 
+                  href="/market">
+                  <strong class="columns_black_title">
+                    云图市场
+                    
+                  </strong>
+                  <small class="columns_desc"></small>
+                </a>
+
+                
+              </div>
+              
+            </div>
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+    
+  </div>
+  <!-- /.frosted_nav_item -->
+  
+  <div
+    class="frosted_nav_item  ">
+    <a class="hover_dropdown" 
+      href="/advantage">
+      <span class="nav_title"> 为什么选择高德</span>
+      
+    </a>
+    
+  </div>
+  <!-- /.frosted_nav_item -->
+  
+
+  <div class="frosted_nav_item children_step_aside">
+    <a href="javascript:void(0)" class="click_dropdown frosted_nav_search_entrance"><span class="iconfont icon-daohangsousuoanniu"></span></a>
+
+    <div class="children dropdown_item">
+      <div class="children_core">
+        <div class="dropdown_height_mark">
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<!-- /nav -->
+  </div>
+  <!-- /.frosted_core -->
+
+  <!-- .frosted_dropdown -->
+  <div class="frosted_dropdown">
+    <div id="frosted_dropdown_frosted_core" class="frosted_core">
+      <div class="dropdown_dynamic_content">
+        <!-- #frosted_searchbar -->
+<div id="frosted_searchbar" class="frosted_searchbar">
+  <form class="frosted_search_wrapper" action="/search?s=" method="get">
+    <span class="iconfont icon-daohangsousuoanniu search_icon"></span>
+    <input id="frosted_search_input" class="frosted_search_input" name="s" type="text" autocomplete="off"
+      placeholder="在高德开放平台搜索">
+    <a id="empty_search" class="empty_search" href="javascript:void(0)"><span
+        class="iconfont icon-qingkonganniu"></span></a>
+  </form>
+
+  <div id="frosted_search_sug" class="frosted_search_sug" data-search="" data-sug="0" data-suging="0">
+    <div class="frosted_search_sug_ing">
+      <img class="frosted_search_sug_ing_img" src="/public/img/header/loading.gif" alt="">
+    </div>
+
+    <div id="frosted_search_sug_content" class="frosted_search_sug_content"></div>
+  </div>
+
+  <div id="frosted_search_history_wrapper" class="frosted_search_history_wrapper frosted_search_content"
+    data-history="0">
+    <strong>历史记录</strong>
+
+    <ul id="frosted_search_history" class="frosted_search_history">
+      <!-- <li><a href="/search?s=地图">地图</a></li> -->
+    </ul>
+  </div>
+
+  <div class="frosted_search_content">
+    <strong>热门推荐</strong>
+
+    <ul class="frosted_search_list">
+      
+      <li>
+        <a href="/search?s=Android定位">
+          <span class="left">
+            <span class="iconfont icon-daohanglianjiejiantou"></span>
+            <strong>Android定位</strong>
+          </span>
+
+          <span class="right">
+            <small>Android定位问题相关</small>
+          </span>
+        </a>
+      </li>
+      
+      <li>
+        <a href="/search?s=浏览器定位">
+          <span class="left">
+            <span class="iconfont icon-daohanglianjiejiantou"></span>
+            <strong>浏览器定位</strong>
+          </span>
+
+          <span class="right">
+            <small>JS API提供Geolocation定位插件</small>
+          </span>
+        </a>
+      </li>
+      
+      <li>
+        <a href="/search?s=逆地理编码">
+          <span class="left">
+            <span class="iconfont icon-daohanglianjiejiantou"></span>
+            <strong>逆地理编码</strong>
+          </span>
+
+          <span class="right">
+            <small>经纬度转换为详细结构化的地址</small>
+          </span>
+        </a>
+      </li>
+      
+      <li>
+        <a href="/search?s=自定义地图">
+          <span class="left">
+            <span class="iconfont icon-daohanglianjiejiantou"></span>
+            <strong>自定义地图</strong>
+          </span>
+
+          <span class="right">
+            <small>7大类44种地图元素可定制</small>
+          </span>
+        </a>
+      </li>
+      
+      <li>
+        <a href="/search?s=认证开发商">
+          <span class="left">
+            <span class="iconfont icon-daohanglianjiejiantou"></span>
+            <strong>认证开发商</strong>
+          </span>
+
+          <span class="right">
+            <small>商业授权相关问题</small>
+          </span>
+        </a>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<!-- /#frosted_searchbar -->
+
+<!--
+<div class="searchbar">
+  <div class="search_input">
+    <input type="text" autocomplete="off" id="search">
+    <i class="iconfont icon-search"></i>
+  </div>
+
+  <div class="search_sug hide">
+    <div class="sug_his_box"></div>
+    <div class="sug_hot_box"></div>
+    <div class="sug_list_box"></div>
+
+    <div class="sug_loading hide">
+      <img src="//a.amap.com/lbs-dev-yuntu/static/web/image/common/loading.gif" alt="">
+    </div>
+  </div>
+</div>
+-->
+
+      </div>
+    </div>
+  </div>
+  <!-- /.frosted_dropdown -->
+</header>
+<!-- /header --><div class="container" id="container"><div class="top-container" id="top-container"> </div><div class="title-container" id="title-container"></div><div class="center-container" id="center-container"><div class="cate-container" id="cate-container"> <div class="sidebar">
+  <div class="article_title">
+    <span>地图 JS API 2.0</span>
+    
+  </div>
+  <div class="sidebar_list" id="cate_sidebar">
+    <ul class="sidebar_grandpa">
+      
+      
+      <li id="54330" data-type="doc"
+        class="father_li  ">
+        <span class="father_li_title">
+          
+          <a href="/api/javascript-api-v2/summary" target="">
+            <span>概述</span>
+            
+          </a>
+          
+        </span>
+        
+      </li>
+      
+      
+      
+      <li id="54562" data-type="doc"
+        class="father_li  ">
+        <span class="father_li_title">
+          
+          <a href="/api/javascript-api-v2/prerequisites" target="">
+            <span>准备</span>
+            
+          </a>
+          
+        </span>
+        
+      </li>
+      
+      
+      
+      <li id="54561" data-type="doc"
+        class="father_li  ">
+        <span class="father_li_title">
+          
+          <a href="/api/javascript-api-v2/getting-started" target="">
+            <span>快速上手</span>
+            
+          </a>
+          
+        </span>
+        
+      </li>
+      
+      
+      
+      <li id="55193" data-type="doc"
+        class="father_li  ">
+        <span class="father_li_title">
+          
+          <a href="/api/javascript-api-v2/update" target="">
+            <span>升级指南</span>
+            
+          </a>
+          
+        </span>
+        
+      </li>
+      
+      
+      
+      <li id="54568" data-type="empty"
+        class="father_li has-child ">
+        <span class="father_li_title">
+          
+          
+          <span>
+            入门教程
+            
+            <i class="iconfont icon-downarrow"></i>
+            
+          </span>
+          
+
+          
+        </span>
+        
+        <ul class="sidebar_father could-expand">
+          
+          <li id="54569"
+            class=" ">
+            
+            <a href="/api/javascript-api-v2/tutorails/display-a-map" target="">展示地图</a>
+            
+
+            
+          </li>
+          
+          <li id="54570"
+            class=" ">
+            
+            <a href="/api/javascript-api-v2/tutorails/display-a-layer" target="">展示图层</a>
+            
+
+            
+          </li>
+          
+          <li id="54571"
+            class=" ">
+            
+            <a href="/api/javascript-api-v2/tutorails/add-plugin" target="">添加地图控件</a>
+            
+
+            
+          </li>
+          
+          <li id="54572"
+            class=" ">
+            
+            <a href="/api/javascript-api-v2/tutorails/add-marker" target="">添加点标记</a>
+            
+
+            
+          </li>
+          
+          <li id="54573"
+            class=" ">
+            
+            <a href="/api/javascript-api-v2/tutorails/add-polygon" target="">添加多边形</a>
+            
+
+            
+          </li>
+          
+          <li id="54574"
+            class=" ">
+            
+            <a href="/api/javascript-api-v2/tutorails/search-poi" target="">搜索地点</a>
+            
+
+            
+          </li>
+          
+          <li id="54575"
+            class=" ">
+            
+            <a href="/api/javascript-api-v2/tutorails/car-dir" target="">规划路线</a>
+            
+
+            
+          </li>
+          
+        </ul>
+        
+      </li>
+      
+      
+      
+      <li id="54318" data-type="empty"
+        class="father_li has-child current show">
+        <span class="father_li_title">
+          
+          
+          <span>
+            进阶教程
+            
+            <i class="iconfont icon-downarrow"></i>
+            
+          </span>
+          
+
+          
+        </span>
+        
+        <ul class="sidebar_father could-expand">
+          
+          <li id="54321"
+            class="has-child ">
+            
+            
+            <span>基础</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54592" class="">
+                
+                <a href="/api/javascript-api-v2/guide/abc/jscode" target="">JS API 安全密钥使用</a>
+                
+              </li>
+              
+              <li id="54518" class="">
+                
+                <a href="/api/javascript-api-v2/guide/abc/load" target="">JS API 的加载</a>
+                
+              </li>
+              
+              <li id="54598" class="">
+                
+                <a href="/api/javascript-api-v2/guide/abc/amap-react" target="">JS API 结合 React 使用</a>
+                
+              </li>
+              
+              <li id="54596" class="">
+                
+                <a href="/api/javascript-api-v2/guide/abc/amap-vue" target="">JS API 结合 Vue 使用</a>
+                
+              </li>
+              
+              <li id="54515" class="">
+                
+                <a href="/api/javascript-api-v2/guide/abc/plugins" target="">插件的使用</a>
+                
+              </li>
+              
+              <li id="54599" class="">
+                
+                <a href="/api/javascript-api-v2/guide/abc/plugins-list" target="">插件列表</a>
+                
+              </li>
+              
+              <li id="54516" class="">
+                
+                <a href="/api/javascript-api-v2/guide/abc/components" target="">地图组成和常用名词</a>
+                
+              </li>
+              
+              <li id="54517" class="">
+                
+                <a href="/api/javascript-api-v2/guide/abc/basetype" target="">基础类</a>
+                
+              </li>
+              
+              <li id="54844" class="">
+                
+                <a href="/api/javascript-api-v2/guide/abc/errorcode" target="">错误码描述</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54319"
+            class="has-child ">
+            
+            
+            <span>地图</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54505" class="">
+                
+                <a href="/api/javascript-api-v2/guide/map/lifecycle" target="">地图生命周期</a>
+                
+              </li>
+              
+              <li id="54506" class="">
+                
+                <a href="/api/javascript-api-v2/guide/map/state" target="">地图状态</a>
+                
+              </li>
+              
+              <li id="54507" class="">
+                
+                <a href="/api/javascript-api-v2/guide/map/map-bind" target="">地图的交互与事件</a>
+                
+              </li>
+              
+              <li id="54509" class="">
+                
+                <a href="/api/javascript-api-v2/guide/map/map-layer" target="">覆盖物/图层管理</a>
+                
+              </li>
+              
+              <li id="54508" class="">
+                
+                <a href="/api/javascript-api-v2/guide/map/map-style" target="">自定义地图</a>
+                
+              </li>
+              
+              <li id="54504" class="">
+                
+                <a href="/api/javascript-api-v2/guide/map/3d-map" target="">3D 地图</a>
+                
+              </li>
+              
+              <li id="55644" class="">
+                
+                <a href="/api/javascript-api-v2/guide/map/world-map" target="">世界地图</a>
+                
+              </li>
+              
+              <li id="55645" class="">
+                
+                <a href="/api/javascript-api-v2/guide/map/englishmap" target="">多语言地图</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54563"
+            class="has-child ">
+            
+            
+            <span>点标记</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54564" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-marker/default-marker" target="">默认点标记</a>
+                
+              </li>
+              
+              <li id="54565" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-marker/custom-marker" target="">自定义点标记</a>
+                
+              </li>
+              
+              <li id="54604" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-marker/text-marker" target="">文本点标记</a>
+                
+              </li>
+              
+              <li id="54605" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-marker/circle-marker" target="">圆形标记</a>
+                
+              </li>
+              
+              <li id="54606" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-marker/elasticmarker" target="">灵活点标记</a>
+                
+              </li>
+              
+              <li id="54566" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-marker/marker-anchor-offset" target="">点标记锚点位置</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54576"
+            class="has-child ">
+            
+            
+            <span>海量点</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54567" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-massmarker/label-marker" target="">海量标注</a>
+                
+              </li>
+              
+              <li id="54577" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-massmarker/mass-marks" target="">海量点标记</a>
+                
+              </li>
+              
+              <li id="54578" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-massmarker/marker-cluster" target="">点聚合</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54580"
+            class="has-child ">
+            
+            
+            <span>线</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54581" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-line/poly-line" target="">折线</a>
+                
+              </li>
+              
+              <li id="54582" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-line/besizer-curve" target="">贝塞尔曲线 </a>
+                
+              </li>
+              
+              <li id="54583" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-line/line-editor" target="">折线编辑插件</a>
+                
+              </li>
+              
+              <li id="54584" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-line/beziercurve-editor" target="">贝塞尔曲线编辑插件</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54585"
+            class="has-child ">
+            
+            
+            <span>面</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54586" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-polygon/polygon" target="">多边形绘制和编辑</a>
+                
+              </li>
+              
+              <li id="54588" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-polygon/circle" target="">圆形绘制和编辑</a>
+                
+              </li>
+              
+              <li id="54589" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-polygon/rectangle" target="">矩形绘制和编辑</a>
+                
+              </li>
+              
+              <li id="54590" class="">
+                
+                <a href="/api/javascript-api-v2/guide/amap-polygon/ellipse" target="">椭圆形绘制和编辑</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54322"
+            class="has-child ">
+            
+            
+            <span>控件和弹窗</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54519" class="">
+                
+                <a href="/api/javascript-api-v2/guide/overlays/info-window" target="">信息窗体</a>
+                
+              </li>
+              
+              <li id="54520" class="">
+                
+                <a href="/api/javascript-api-v2/guide/overlays/toolbar" target="">地图控件</a>
+                
+              </li>
+              
+              <li id="54597" class="">
+                
+                <a href="/api/javascript-api-v2/guide/overlays/context-menu" target="">右键菜单</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54320"
+            class="has-child ">
+            
+            
+            <span>图层</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54510" class="">
+                
+                <a href="/api/javascript-api-v2/guide/layers/official-layers" target="">高德官方图层</a>
+                
+              </li>
+              
+              <li id="54514" class="">
+                
+                <a href="/api/javascript-api-v2/guide/layers/districtlayer" target="">简易行政区图</a>
+                
+              </li>
+              
+              <li id="54511" class="">
+                
+                <a href="/api/javascript-api-v2/guide/layers/wms" target="">第三方标准图层</a>
+                
+              </li>
+              
+              <li id="54512" class="">
+                
+                <a href="/api/javascript-api-v2/guide/layers/canvaslayer" target="">使用自有数据添加图层</a>
+                
+              </li>
+              
+              <li id="54513" class="">
+                
+                <a href="/api/javascript-api-v2/guide/layers/customlayer" target="">自定义图层</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54323"
+            class="has-child ">
+            
+            
+            <span>事件系统</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54521" class="">
+                
+                <a href="/api/javascript-api-v2/guide/events/map_overlay" target="">地图和覆盖物事件</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54324"
+            class="has-child ">
+            
+            
+            <span>坐标变换</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54522" class="">
+                
+                <a href="/api/javascript-api-v2/guide/transform/coord_trans" target="">坐标系转换</a>
+                
+              </li>
+              
+              <li id="54523" class="">
+                
+                <a href="/api/javascript-api-v2/guide/transform/convertfrom" target="">其他坐标转高德坐标</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54325"
+            class="has-child ">
+            
+            
+            <span>几何计算</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54524" class="">
+                
+                <a href="/api/javascript-api-v2/guide/geometry/geometry" target="">距离、长度、面积</a>
+                
+              </li>
+              
+              <li id="54525" class="">
+                
+                <a href="/api/javascript-api-v2/guide/geometry/geometry2" target="">计算线面关系等</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54326"
+            class="has-child ">
+            
+            
+            <span>辅助库</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54526" class="">
+                
+                <a href="/api/javascript-api-v2/guide/utils/browser" target="">浏览器辅助函数</a>
+                
+              </li>
+              
+              <li id="54527" class="">
+                
+                <a href="/api/javascript-api-v2/guide/utils/util" target="">其他辅助函数</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li id="54327"
+            class="has-child current">
+            
+            
+            <span>服务插件和工具</span>
+            
+            
+
+            
+            <ul class="sidebar_son">
+              
+              <li id="54529" class="">
+                
+                <a href="/api/javascript-api-v2/guide/services/navigation" target="">路线规划</a>
+                
+              </li>
+              
+              <li id="54530" class="">
+                
+                <a href="/api/javascript-api-v2/guide/services/autocomplete" target="">输入提示与 POI 搜索</a>
+                
+              </li>
+              
+              <li id="54535" class="">
+                
+                <a href="/api/javascript-api-v2/guide/services/grasp" target="">轨迹纠偏</a>
+                
+              </li>
+              
+              <li id="54531" class="">
+                
+                <a href="/api/javascript-api-v2/guide/services/district-search" target="">行政区查询</a>
+                
+              </li>
+              
+              <li id="54532" class="current">
+                
+                <a href="/api/javascript-api-v2/guide/services/geocoder" target="">地理编码与逆地理编码</a>
+                
+              </li>
+              
+              <li id="54528" class="">
+                
+                <a href="/api/javascript-api-v2/guide/services/bus" target="">站点查询与公交线路</a>
+                
+              </li>
+              
+              <li id="54533" class="">
+                
+                <a href="/api/javascript-api-v2/guide/services/geolocation" target="">定位</a>
+                
+              </li>
+              
+              <li id="54534" class="">
+                
+                <a href="/api/javascript-api-v2/guide/services/weather" target="">天气</a>
+                
+              </li>
+              
+              <li id="54587" class="">
+                
+                <a href="/api/javascript-api-v2/guide/services/mouse-tool" target="">鼠标工具绘制矢量图形</a>
+                
+              </li>
+              
+              <li id="54593" class="">
+                
+                <a href="/api/javascript-api-v2/guide/services/mouse-tool-scale" target="">鼠标工具拉框缩放</a>
+                
+              </li>
+              
+              <li id="54594" class="">
+                
+                <a href="/api/javascript-api-v2/guide/services/mouse-tool-measure" target="">鼠标工具距离面积测量</a>
+                
+              </li>
+              
+            </ul>
+            
+          </li>
+          
+        </ul>
+        
+      </li>
+      
+      
+      
+      <li id="55672" data-type="doc"
+        class="father_li  ">
+        <span class="father_li_title">
+          
+          <a href="/api/javascript-api-v2/documentation" target="">
+            <span>参考手册</span>
+            
+          </a>
+          
+        </span>
+        
+      </li>
+      
+      
+      
+      
+      
+      <li id="55195" data-type="doc"
+        class="father_li  ">
+        <span class="father_li_title">
+          
+          <a href="/api/javascript-api-v2/changelog" target="">
+            <span>更新日志</span>
+            
+          </a>
+          
+        </span>
+        
+      </li>
+      
+      
+      
+      <li id="54608" data-type="empty"
+        class="father_li  ">
+        <span class="father_li_title">
+          
+          
+          <a href="/demo/list/js-api-v2" target="_blank">
+            <span>示例中心</span>
+          </a>
+          
+
+          
+        </span>
+        
+      </li>
+      
+      
+      
+      <li id="55196" data-type="url"
+        class="father_li  ">
+        <span class="father_li_title">
+          
+          <a target="_blank" href="/api/loca-v2">
+            <span>LOCA 数据可视化 API</span>
+            
+          </a>
+
+          
+        </span>
+        
+      </li>
+      
+      
+      
+      <li id="55197" data-type="url"
+        class="father_li  ">
+        <span class="father_li_title">
+          
+          <a target="_blank" href="/api/amap-ui/intro">
+            <span>AMapUI 组件库</span>
+            
+          </a>
+
+          
+        </span>
+        
+      </li>
+      
+      
+      
+      <li id="55198" data-type="url"
+        class="father_li  ">
+        <span class="father_li_title">
+          
+          <a target="_blank" href="https://lbs.amap.com/api/javascript-api/summary">
+            <span>地图 JS API v1.4</span>
+            
+          </a>
+
+          
+        </span>
+        
+      </li>
+      
+      
+      
+      
+    </ul>
+  </div>
+</div> </div><div class="content-container" id="content-container"><div class="article_body has_right" meta="{&quot;ori_id&quot;:&quot;13857&quot;,&quot;sidebar&quot;:&quot;0&quot;,&quot;crumbs&quot;:&quot;0&quot;,&quot;isNew&quot;:false}">
+  <div class="crumbs">
+    <!-- <span>您现在的位置：</span> -->
+    <span><a href="/api">开发</a></span>
+    
+    <i class="iconfont icon-rightarrow"></i>
+    <span>地图 JS API 2.0</span>
+    
+    <i class="iconfont icon-rightarrow"></i>
+    <span>进阶教程</span>
+    
+    <i class="iconfont icon-rightarrow"></i>
+    <span>服务插件和工具</span>
+    
+    <i class="iconfont icon-rightarrow"></i>
+    <span>地理编码与逆地理编码</span>
+    
+  </div>
+
+  <article class="cur_article" id="14905">
+    <h1 class="title_wrap">
+      <span class="title" id="docTitle">地理编码与逆地理编码</span>
+      <span class="update_time">最后更新时间: 2024年07月19日</span>
+    </h1>
+    <article class="4ever-article"><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text" style="color:rgb(0, 0, 0)">在 JS API 中，可以调用地理编码/逆地理编码接口，</span><span data-type="text" style="color:rgb(37, 43, 72)"> 实现</span><span data-type="text" style="font-weight:bold;color:rgb(37, 43, 72)">地址描述信息</span><span data-type="text" style="color:rgb(37, 43, 72)">与</span><span data-type="text" style="font-weight:bold;color:rgb(37, 43, 72)">地理坐标（经纬度）</span><span data-type="text" style="color:rgb(37, 43, 72)">之间的转化。同时，结合地图样式及交互，实现业务需求。</span></p><ul style="list-style-type:disc"><li><div style="text-align:left;text-indent:0"><span data-type="text">正向地理编码： 比如在搜索页面，用户输入的是某个</span><span data-type="text" style="font-weight:bold">地址描述信息</span><span data-type="text">，然后调用正向地理编码接口，将</span><span data-type="text" style="font-weight:bold">地址描述信息</span><span data-type="text">转换成</span><span data-type="text" style="font-weight:bold">地理坐标（经纬度）</span></div></li><li><div style="text-align:left;text-indent:0"><span data-type="text">逆向地理编码：比如在某个地图页面，用户可以通过点选地图选择点，然后调用头逆地理编码接口，将</span><span data-type="text" style="font-weight:bold">地理坐标（经纬度）</span><span data-type="text">转换成</span><span data-type="text" style="font-weight:bold">地址描述信息</span></div></li></ul><h2 style="font-size:16pt;line-height:85%;margin-top:21.333333333333332px;margin-bottom:12px;text-align:left;text-indent:0;margin-left:0"><span data-type="text" style="font-weight:bold;font-size:16pt">1、准备</span></h2><div class='note-warp note'><span class='note-title'>成为开发者并创建 key</span><p data-type="false" style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text">为了正常调用 API ，请先注册成为高德开放平台开发者，并申请 web 平台（JS API）的 key 和安全密钥，点击 </span><a href="/api/jsapi-v2/prerequisites" data-link-href-cangjie="/api/jsapi-v2/prerequisites" target="_blank" rel="noopener noreferrer"><span data-type="text">具体操作</span></a><span data-type="text">。</span></p></div><div class='note-warp notice'><span class='note-title'>提示</span><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text" style="color:#404040">您在2021年12月02日以后申请的 key 需要配合您的安全密钥一起使用。</span></p></div><h2 style="font-size:16pt;line-height:85%;margin-top:21.333333333333332px;margin-bottom:12px;text-align:left;text-indent:0;margin-left:0"><span data-type="text" style="font-weight:bold;font-size:16pt">2、使用说明</span></h2><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="inlineCode" style="padding:3px 8px;margin:0 5px;border:1px solid #e5e5e5;border-radius:3px;font-family:monospace;word-break:break-all;background-color:#f7f7f7">AMap.Geocoder</span><span data-type="text">地理编码与逆地理编码服务，用于地址描述与经纬度坐标之间的转换，可以通过回调函数获取查询结果。</span></p><h3 style="font-size:14pt;line-height:85%;margin-top:18.666666666666664px;margin-bottom:12px;text-align:left;text-indent:0;margin-left:0"><span data-type="text" style="font-weight:bold;font-size:14pt">2.1 正向地理编码</span></h3><iframe src="/fn/iframe?path=jsapi-v2/example/geocoder/geocoding" width="950" height="450"></iframe><div class='demo-btn demorun-btn'><i class='iconfont icon-play1'></i><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text"></span><a href="/demo/jsapi-v2/example/geocoder/geocoding" data-link-href-cangjie="https://lbs.amap.com/demo/jsapi-v2/example/geocoder/geocoding" target="_blank" rel="noopener noreferrer"><span data-type="text">亲手试一试</span></a><span data-type="text"></span></p></div><div class='demo-btn demodownload-btn'><i class='iconfont icon-download'></i><a href='/service/api/downloadCode?path=jsapi-v2/example/geocoder/geocoding' download='geocoding.html'><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text">下载完整代码</span></p></a></div><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text">实现正向地理编码（简称：地理编码）使用</span><span data-type="inlineCode" style="padding:3px 8px;margin:0 5px;border:1px solid #e5e5e5;border-radius:3px;font-family:monospace;word-break:break-all;background-color:#f7f7f7">AMap.Geocoder</span><span data-type="text">的</span><span data-type="inlineCode" style="padding:3px 8px;margin:0 5px;border:1px solid #e5e5e5;border-radius:3px;font-family:monospace;word-break:break-all;background-color:#f7f7f7">getLocation()</span><span data-type="text">方法。</span></p><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text" style="font-size:11pt">下面以获取北京市海淀区苏州街的坐标信息为例：</span></p><pre><code data-syntax="text/javascript" data-theme="default" style="height:undefinedpx">//引入插件，此示例采用异步引入，更多引入方式 https://lbs.amap.com/api/javascript-api-v2/guide/abc/plugins
+AMap.plugin(&quot;AMap.Geocoder&quot;, function () {
+  var geocoder = new AMap.Geocoder({
+    city: &quot;010&quot;, // city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
+  });
+
+  var address = &quot;北京市海淀区苏州街&quot;;
+
+  geocoder.getLocation(address, function (status, result) {
+    if (status === &quot;complete&quot; &amp;&amp; result.info === &quot;OK&quot;) {
+      // result中对应详细地理坐标信息
+      console.log(result);
+    }
+  });
+});</code></pre><div class='doc-link ref-link'><i class='iconfont icon-wendang'></i><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text" style="font-size:10.5pt"></span><a href="/api/javascript-api-v2/documentation#geocoder" data-link-href-cangjie="https://lbs.amap.com/api/javascript-api-v2/documentation#geocoder" target="_blank" rel="noopener noreferrer"><span data-type="text" style="font-size:10.5pt">查看AMap.Geocoder的全部属性和方法</span></a><span data-type="text" style="font-size:10.5pt"></span></p></div><div class='doc-link ref-link'><i class='iconfont icon-run'></i><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text"></span><a href="/api/jsapi-v2/example/geocoder/geocoding" data-link-href-cangjie="https://lbs.amap.com/api/jsapi-v2/example/geocoder/geocoding" target="_blank" rel="noopener noreferrer"><span data-type="text" style="font-size:10.5pt">查看示例</span></a><span data-type="text"></span></p></div><div class='note-warp note'><span class='note-title'>批量地理编码</span><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="inlineCode" style="font-size:10.5pt;padding:3px 8px;margin:0 5px;border:1px solid #e5e5e5;border-radius:3px;font-family:monospace;word-break:break-all;background-color:#f7f7f7">getLocation()</span><span data-type="text" style="font-size:10.5pt">方法参数传入为地址数组，例：</span></p><pre><code data-syntax="text/javascript" data-theme="default" style="height:nullpx">AMap.plugin(&#x27;AMap.Geocoder&#x27;, function() {
+  var geocoder = new AMap.Geocoder({
+    city: &#x27;010&#x27; // city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
+  });
+  
+  var addresses = [&#x27;朝阳区阜荣街10号&#x27;, &#x27;朝阳区广顺南大街13号&#x27;, &#x27;朝阳区阜通西大街17号&#x27;];
+  geocoder.getLocation(addresses, function(status, result) {
+    if (status === &#x27;complete&#x27; &amp;&amp; result.info === &#x27;OK&#x27;) {
+      // result中对应详细地理坐标信息
+      // result.geocodes为批量地址地理编码数据
+    }
+  });
+});</code></pre></div><h3 style="font-size:14pt;line-height:85%;margin-top:18.666666666666664px;margin-bottom:12px;text-align:left;text-indent:0;margin-left:0"><span data-type="text" style="font-weight:bold;font-size:14pt">2.2 逆向地理编码</span></h3><iframe src="/fn/iframe?path=jsapi-v2/example/geocoder/regeocoding" width="950" height="450"></iframe><div class='demo-btn demorun-btn'><i class='iconfont icon-play1'></i><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text"></span><a href="/demo/jsapi-v2/example/geocoder/regeocoding" data-link-href-cangjie="https://lbs.amap.com/demo/jsapi-v2/example/geocoder/regeocoding" target="_blank" rel="noopener noreferrer"><span data-type="text">亲手试一试</span></a><span data-type="text"></span></p></div><div class='demo-btn demodownload-btn'><i class='iconfont icon-download'></i><a href='/service/api/downloadCode?path=jsapi-v2/example/geocoder/regeocoding' download='regeocoding.html'><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text">下载完整代码</span></p></a></div><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text">实现逆向地理编码使用</span><span data-type="inlineCode" style="padding:3px 8px;margin:0 5px;border:1px solid #e5e5e5;border-radius:3px;font-family:monospace;word-break:break-all;background-color:#f7f7f7">AMap.Geocoder</span><span data-type="text">的</span><span data-type="inlineCode" style="padding:3px 8px;margin:0 5px;border:1px solid #e5e5e5;border-radius:3px;font-family:monospace;word-break:break-all;background-color:#f7f7f7">getAddress()</span><span data-type="text">方法。</span></p><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text" style="font-size:11pt">下面以获取坐标对应的地址信息为例：</span></p><pre><code data-syntax="text/javascript" data-theme="default" style="height:undefinedpx">//引入插件，此示例采用异步引入，更多引入方式 https://lbs.amap.com/api/javascript-api-v2/guide/abc/plugins
+AMap.plugin(&quot;AMap.Geocoder&quot;, function () {
+  var geocoder = new AMap.Geocoder({
+    city: &quot;010&quot;, // city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
+  });
+
+  var lnglat = [116.396574, 39.992706];
+
+  geocoder.getAddress(lnglat, function (status, result) {
+    if (status === &quot;complete&quot; &amp;&amp; result.info === &quot;OK&quot;) {
+      // result为对应的地理位置详细信息
+      console.log(result);
+    }
+  });
+});</code></pre><div class='doc-link ref-link'><i class='iconfont icon-wendang'></i><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text" style="font-size:10.5pt"></span><a href="/api/javascript-api-v2/documentation#geocoder" data-link-href-cangjie="https://lbs.amap.com/api/javascript-api-v2/documentation#geocoder" target="_blank" rel="noopener noreferrer"><span data-type="text" style="font-size:10.5pt">查看AMap.Geocoder的全部属性和方法</span></a><span data-type="text" style="font-size:10.5pt"></span></p></div><div class='doc-link ref-link'><i class='iconfont icon-run'></i><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="text"></span><a href="/api/jsapi-v2/example/geocoder/regeocoding" data-link-href-cangjie="https://lbs.amap.com/api/jsapi-v2/example/geocoder/regeocoding" target="_blank" rel="noopener noreferrer"><span data-type="text" style="font-size:10.5pt">查看示例</span></a><span data-type="text"></span></p></div><div class='note-warp note'><span class='note-title'>批量逆地理编码</span><p style="text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0"><span data-type="inlineCode" style="font-size:10.5pt;padding:3px 8px;margin:0 5px;border:1px solid #e5e5e5;border-radius:3px;font-family:monospace;word-break:break-all;background-color:#f7f7f7">getAddress()</span><span data-type="text" style="font-size:10.5pt">方法参数传入为</span><span data-type="inlineCode" style="font-size:10.5pt;padding:3px 8px;margin:0 5px;border:1px solid #e5e5e5;border-radius:3px;font-family:monospace;word-break:break-all;background-color:#f7f7f7">lnglat</span><span data-type="text" style="font-size:10.5pt">对象数组，例：</span></p><pre><code data-syntax="text/javascript" data-theme="default" style="height:nullpx">AMap.plugin(&quot;AMap.Geocoder&quot;, function () {
+  var geocoder = new AMap.Geocoder({
+    city: &quot;010&quot;, // city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
+  });
+
+  var lnglats = [
+    new AMap.LngLat(116.451662, 39.944899),
+    new AMap.LngLat(116.444569, 39.93927),
+    new AMap.LngLat(116.442932, 39.933147),
+  ];
+  // 也可简写成 var lnglats = [[116.451662,39.944899], [116.444569,39.93927], [116.442932,39.933147]]
+
+  geocoder.getAddress(lnglats, function (status, result) {
+    if (status === &quot;complete&quot; &amp;&amp; result.info === &quot;OK&quot;) {
+      // result为对应的地理位置详细信息
+      // result.regeocodes为批量逆地址地理编码数据
+    }
+  });
+});</code></pre></div></article>
+  </article>
+
+  <div class="satisfy-container" id="satisfy-container">
+    
+  </div>
+  <!-- <div class="page-ctrl">
+    
+    
+    
+    <a class="page-prev" href="/api/javascript-api-v2/guide/services/district-search">
+      <i class="iconfont icon-rightarrow"></i>
+      <span>上一篇：行政区查询</span>
+    </a>
+    
+    
+    
+    
+    <a class="page-next" href="/api/javascript-api-v2/guide/services/bus">
+      <span>下一篇：站点查询与公交线路</span>
+      <i class="iconfont icon-rightarrow"></i>
+    </a>
+    
+  </div> -->
+</div>
+<div class="right_body_wrap">
+  <div class="right_body">
+    <div class="star_wrapper">
+      <!-- <div class="right_body_title"></div> -->
+      <div class="star_box" id="star_box"></div>
+    </div>
+    
+    <div class="right_nav has_right">
+      <div class="right_body_title">本页目录</div>
+      
+<ul class="right_nav_ul" id="right_nav">
+    
+    
+    
+    
+    
+    
+    
+    
+    <li class="right_nav_item list" id="nav_t0"><a title="1、准备" href="#t0">1、准备</a></li>
+    
+    
+    
+    
+    
+    
+    <li class="right_nav_item list" id="nav_t1"><a title="2、使用说明" href="#t1">2、使用说明</a></li>
+    
+    
+    
+    
+    
+    
+    <li class="right_nav_item sublist" id="nav_s0"><a title="2.1 正向地理编码" href="#s0">2.1 正向地理编码</a></li>
+    
+    
+    
+    
+    
+    
+    <li class="right_nav_item sublist" id="nav_s1"><a title="2.2 逆向地理编码" href="#s1">2.2 逆向地理编码</a></li>
+    
+</ul>
+
+    </div>
+    
+  </div>
+</div></div></div></div><footer class="foot-pc"><footer class="global_footer">
+  <div class="content">
+    <nav class="footer_nav">
+      <ul>
+        
+        <li class="map_item">
+          <strong>新手入门</strong>
+          
+          
+          <a href="/product/map">产品与服务</a>
+          
+          
+          
+          <a href="/solution/transportation">解决方案</a>
+          
+          
+          
+          <a href="/api">开发文档</a>
+          
+          
+        </li>
+        
+        <li class="map_item">
+          <strong>商务合作</strong>
+          
+          
+          <a href="/cooperation/cooperation/">商务合作</a>
+          
+          
+          
+          <a href="/cooperation/poi/index/">商家合作</a>
+          
+          
+        </li>
+        
+        <li class="map_item">
+          <strong>常见问题</strong>
+          
+          
+          <a href="/faq/account/account">账号问题</a>
+          
+          
+          
+          <a href="/faq/top/feedback/268">定位反馈</a>
+          
+          
+          
+          <a href="/faq/account/registered">常见问题汇总</a>
+          
+          
+          
+          <a href="/home/terms/">服务协议</a>
+          
+          
+          
+          <a href="/home/privacy/">隐私权政策</a>
+          
+          
+          
+          <a href="/home/disclaimer/">免责声明</a>
+          
+          
+          
+          <a href="/agreement/user_device">数据退出</a>
+          
+          
+        </li>
+        
+        <li class="map_item">
+          <strong>开放平台</strong>
+          
+          
+          <span class="footer_social_label">关注我们</span>
+          <a class="footer_social footer_wx" title="高德开放平台微信公众号">
+            <span class="mobile">微信</span>
+            <span class="sns_icon footer_sns_icon">
+              <i class="iconfont icon-wx"></i>
+            </span>
+            <img src="//a.amap.com/lbs/static/img/gaode_qr.jpg" alt="" />
+          </a>
+          <a class="footer_social footer_wb" target="_blank" href="//weibo.com/gaodedituapi" title="高德开放平台新浪微博">
+            <span class="mobile">微博</span>
+            <span class="sns_icon">
+              <i class="iconfont icon-wb"></i>
+            </span>
+          </a>
+          
+          
+        </li>
+        
+      </ul>
+    </nav>
+    <section class="footer_links">
+      <div class="ali_footer" id="ali_footer">
+        
+        <a target="_blank" href="http://www.alibabagroup.com/cn/global/home">阿里巴巴集团</a>
+        
+        |
+        
+        
+        <a target="_blank" href="https://www.taobao.com">淘宝网</a>
+        
+        |
+        
+        
+        <a target="_blank" href="https://www.tmall.com">天猫</a>
+        
+        |
+        
+        
+        <a target="_blank" href="https://ju.taobao.com">聚划算</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.aliexpress.com">全球速卖通</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.alibaba.com/">阿里巴巴国际交易市场</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.1688.com">1688</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.alimama.com">阿里妈妈</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.fliggy.com/">飞猪</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.aliyun.com">阿里云计算</a>
+        
+        |
+        
+        
+        <a target="_blank" href="https://www.alios.cn">AliOS</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.aliqin.cn/">阿里通信</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.etao.com/">一淘</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.net.cn">万网</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.autonavi.com/">高德</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.uc.cn/">UC</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.umeng.com/">友盟</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.xiami.com">虾米</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.alibabaplanet.com/">阿里星球</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.ddchong.com/">点点虫</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.dingtalk.com/">钉钉</a>
+        
+        |
+        
+        
+        <a target="_blank" href="https://www.alipay.com">支付宝</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.youku.com/">优酷</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.tudou.com/">土豆</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.alihealth.cn/">阿里健康</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.alibabapictures.com/simp/0-home.html">阿里影业</a>
+        
+        |
+        
+        
+        <a target="_blank" href="http://www.alisports.com/cn/">阿里体育</a>
+        
+        |
+        
+        
+        <a target="_blank" href="https://www.mybank.cn/">网商银行</a>
+        
+        |
+        
+        
+        <a target="_blank" href="https://es.amap.com">高德打车企业版</a>
+        
+        |
+        
+        
+        <a target="_blank" href="https://auto.amap.com/">高德地图汽车业务中心</a>
+        
+        |
+        
+        
+        <a target="_blank" href="https://lvyou.amap.com/">高德智慧景区</a>
+        
+        
+      </div><!-- /#ali_footer -->
+      © 2002-2025 Amap.com 版权所有 | <a href='https://beian.miit.gov.cn' target='_blank'>京ICP备2023020281号-12</a> | 甲测资字11112528 | 甲测资字11111093<br><div class='zhengzhao_wrap'><a class='zhengzhao' href='//beian.mps.gov.cn/#/query/webSearch?code=11010502056787' target='_blank'><img src='//a.amap.com/lbs-dev-yuntu/static/web/image/common/beian.png'/>京公网安备 11010502056787号</a></div>
+    </section>
+  </div>
+</footer></footer><div class="quick_entrance"><a id="qe_0" class="go2top" href="javascript:void(0);"><span class="iconfont icon-backtop"></span> <span class="quick_entrance_tip">返回顶部</span> </a><a href="/demo/center" id="entrance_democenter" class="entrance_democenter"><span class="iconfont icon-democenter"></span> <span class="quick_entrance_tip">示例中心</span> </a><a href="/faq" id="entrance_faq" class="entrance_faq"><span class="iconfont icon-help"></span> <span class="quick_entrance_tip">常见问题</span> </a><a href="javascript:void(0)" class="quick_entrance_online_service js_xiaomi_enter" class="advisory"><span class="iconfont icon-customer-service"></span> <span class="quick_entrance_tip">智能客服</span> </a><a href="javascript:void(0)" id="qrcode" class="qrcode"><span class="iconfont icon-lbsqrcode"></span> <span class="qrcode_txt">公众号<br>二维码</span> <span class="quick_entrance_tip"><img src="https://a.amap.com/lbs-dev-yuntu/static/web/image/qrcode.jpg" alt=""></span></a></div></div><script src="//a.amap.com/lbs-dev-yuntu/static/web/lib/lib.js"></script><script src="//w.cnzz.com/q_stat.php?id=1255621432" async="async"></script><script>window.initAssets = {"css":"//a.amap.com/lbs-dev-yuntu/static/web/views/doc/doc/doc-doc.umd.9b8ed367101f9fc65012.css","js":"//a.amap.com/lbs-dev-yuntu/static/web/views/doc/doc/doc-doc.umd.044ac5c0d84a8e07ea72.js"};
+    window.pageType = "doc";
+    window.pageDevice = "pc";
+
+    //注册和注销sw
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then(registration => {
+            // console.log('[SW registered]');
+          })
+          .catch(registrationError => {
+            // console.log('[SW registration failed]', registrationError);
+          });
+
+        //卸载 service worker,需要二次刷新
+        // navigator.serviceWorker.getRegistrations().then(registrations => {
+        //   for(let registration of registrations) {
+        //     registration.unregister()
+        //   }
+        // }).catch(function(err) {
+        //   console.log('Service Worker registration failed: ', err);
+        // });
+      });
+    };</script><script type="text/javascript" src="/public/src/assets/main.umd.5a64f83d4aaea2533a37.js"></script></body></html>

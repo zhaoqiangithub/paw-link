@@ -13,6 +13,7 @@ import * as Location from 'expo-location';
 import { PetInfo } from '@/lib/database';
 import { Colors } from '@/constants/theme';
 import { useLocation } from '@/hooks/use-location';
+import { useAmap } from '@/hooks/use-amap';
 import { getApiKeyForPlatform } from '@/config/amap-api-keys';
 
 const { width, height } = Dimensions.get('window');
@@ -42,6 +43,7 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
 }) => {
   const mapRef = useRef<MapView>(null);
   const { location: initialLocation } = useLocation();
+  const { regeo, searchPOI, getRoute } = useAmap();
   const [region, setRegion] = useState({
     longitude: center?.longitude || 116.4074,
     latitude: center?.latitude || 39.9042,
@@ -64,20 +66,11 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
     latitudeDelta: 0.01,
   };
 
-  // 高德反向地理编码
+  // 高德反向地理编码 - 使用新的服务
   const getAddressFromAmap = async (latitude: number, longitude: number): Promise<string | undefined> => {
     try {
-      const apiKey = getApiKeyForPlatform();
-      const url = `https://restapi.amap.com/v3/geocode/regeo?key=${apiKey}&location=${longitude},${latitude}&radius=1000&extensions=all&roadlevel=0`;
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.status === '1' && data.regeocode) {
-        const address = data.regeocode.formatted_address;
-        return address;
-      }
-      return undefined;
+      const result = await regeo({ latitude, longitude });
+      return result?.address;
     } catch (error) {
       console.error('高德反向地理编码失败:', error);
       return undefined;
@@ -185,7 +178,7 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
           latitudeDelta: 0.01,
         }));
 
-        // 5. 获取地址（使用高德API）
+        // 5. 获取地址（使用增强的高德API服务）
         try {
           console.log('🌐 正在获取地址信息...');
           const address = await getAddressFromAmap(latitude, longitude);
@@ -196,6 +189,7 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
         } catch (geoError: any) {
           console.warn('⚠️ 高德反向地理编码失败:', geoError.message || geoError);
           // 地址获取失败不影响定位结果
+          setUserLocation({ longitude, latitude });
         }
 
         // 成功
@@ -276,6 +270,42 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
   const handleLocationButtonPress = useCallback(() => {
     getCurrentLocation();
   }, [getCurrentLocation]);
+
+  // POI搜索功能
+  const handleSearchPOI = useCallback(async (keyword: string, city?: string) => {
+    try {
+      const results = await searchPOI({
+        keyword,
+        city,
+        location: userLocation ? { longitude: userLocation.longitude, latitude: userLocation.latitude } : undefined,
+        radius: 5000
+      });
+      return results;
+    } catch (error) {
+      console.error('POI搜索失败:', error);
+      return [];
+    }
+  }, [searchPOI, userLocation]);
+
+  // 路径规划功能
+  const handleGetRoute = useCallback(async (to: { longitude: number; latitude: number }) => {
+    if (!userLocation) {
+      console.warn('❌ 没有用户位置信息，无法规划路线');
+      return null;
+    }
+    try {
+      const route = await getRoute({
+        from: { longitude: userLocation.longitude, latitude: userLocation.latitude },
+        to,
+        mode: 'driving',
+        strategy: 1
+      });
+      return route;
+    } catch (error) {
+      console.error('路径规划失败:', error);
+      return null;
+    }
+  }, [getRoute, userLocation]);
 
   // 渲染用户位置标记
   const renderUserLocation = () => {

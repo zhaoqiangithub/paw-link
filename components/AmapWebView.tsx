@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, Platform, Alert } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { getAmapHtmlTemplate } from '../utils/amap-js-bridge';
-import { MAP_STYLES, MapStyleType } from '../constants/amap-config';
-import { getApiKeyForPlatform } from '../config/amap-api-keys';
+import * as Location from 'expo-location';
+import { getAmapHtmlTemplate } from '@/utils/amap-js-bridge';
+import { MAP_STYLES, MapStyleType } from '@/constants/amap-config';
+import { getApiKeyForPlatform } from '@/config/amap-api-keys';
 
 // 宠物信息接口
 export interface PetInfo {
@@ -79,6 +80,80 @@ export const AmapWebView: React.FC<AmapWebViewProps & { webViewRef?: React.RefOb
   const [apiKey] = useState<string>(getApiKeyForPlatform()); // 从配置文件获取
   const [mapLoaded, setMapLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false); // 是否正在重试
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 原生定位降级方案
+  const getNativeLocation = useCallback(async () => {
+    console.log('🔄 使用原生 expo-location 作为降级方案');
+    try {
+      // 请求权限
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        throw new Error('PERMISSION_DENIED');
+      }
+
+      // 获取位置（增加超时时间到 20 秒）
+      const location = await Promise.race([
+        Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+          timeInterval: 10000,
+          distanceInterval: 10,
+        }),
+        new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('TIMEOUT')), 20000);
+        })
+      ]);
+
+      const { latitude, longitude, accuracy } = location.coords;
+
+      // 逆地理编码获取地址
+      let address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+      try {
+        const reverseGeocode = await Location.reverseGeocodeAsync({
+          latitude,
+          longitude
+        });
+        if (reverseGeocode.length > 0) {
+          const addr = reverseGeocode[0];
+          address = [addr.region, addr.city, addr.district, addr.street]
+            .filter(Boolean).join('') || address;
+        }
+      } catch (geoError) {
+        console.warn('逆地理编码失败:', geoError);
+      }
+
+      console.log('✅ 原生定位成功:', { latitude, longitude, accuracy, address });
+
+      if (onLocationSuccess) {
+        onLocationSuccess({
+          longitude,
+          latitude,
+          accuracy,
+          address
+        });
+      }
+
+      return true;
+    } catch (error: any) {
+      console.error('❌ 原生定位失败:', error.message);
+      if (error.message !== 'PERMISSION_DENIED') {
+        // 如果不是权限问题，给用户更友好的错误信息
+        if (onLocationError) {
+          onLocationError({
+            message: `定位失败（已尝试所有方案）。请检查：\n1. 设备GPS是否开启\n2. 网络连接是否正常\n3. 是否允许定位权限`
+          });
+        }
+      } else {
+        if (onLocationError) {
+          onLocationError({
+            message: '定位权限被拒绝。请在设置中允许PawLink访问定位服务：\n设置 → 应用 → PawLink → 权限 → 定位 → 允许'
+          });
+        }
+      }
+      return false;
+    }
+  }, [onLocationSuccess, onLocationError]);
 
   // 处理 WebView 消息
   const handleWebViewMessage = useCallback((event: WebViewMessageEvent) => {
@@ -107,14 +182,37 @@ export const AmapWebView: React.FC<AmapWebViewProps & { webViewRef?: React.RefOb
           break;
 
         case 'LOCATION_SUCCESS':
+          setIsRetrying(false);
           if (onLocationSuccess) {
             onLocationSuccess(data.data);
           }
           break;
 
         case 'LOCATION_ERROR':
-          if (onLocationError) {
-            onLocationError(data.data);
+          // WebView 定位失败，尝试原生定位降级
+          if (Platform.OS === 'android' || Platform.OS === 'ios') {
+            const errorCode = data.data?.code;
+            console.log('⚠️ WebView 定位失败，错误码:', errorCode);
+
+            // 清除之前的重试计时器
+            if (retryTimeoutRef.current) {
+              clearTimeout(retryTimeoutRef.current);
+            }
+
+            // 如果是权限或超时错误，尝试原生定位
+            setIsRetrying(true);
+            retryTimeoutRef.current = setTimeout(async () => {
+              console.log('🔄 尝试原生定位作为降级方案...');
+              const success = await getNativeLocation();
+              if (!success) {
+                setIsRetrying(false);
+              }
+            }, 1000); // 1秒后尝试原生定位
+          } else {
+            // Web 平台直接传递错误
+            if (onLocationError) {
+              onLocationError(data.data);
+            }
           }
           break;
 
@@ -139,7 +237,16 @@ export const AmapWebView: React.FC<AmapWebViewProps & { webViewRef?: React.RefOb
     } catch (error) {
       // Silent error handling
     }
-  }, [pets, onMapLoaded, onMarkerClick, onLocationSuccess, onLocationError, onMapClick, onSearchResults, onPOISearchResults]);
+  }, [pets, onMapLoaded, onMarkerClick, onLocationSuccess, onLocationError, onMapClick, onSearchResults, onPOISearchResults, getNativeLocation]);
+
+  // 清理计时器
+  useEffect(() => {
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // 发送宠物数据到WebView
   const sendPetsToWebView = useCallback((petsData: PetInfo[]) => {
@@ -292,13 +399,16 @@ export const AmapWebView: React.FC<AmapWebViewProps & { webViewRef?: React.RefOb
           // 可选：显示加载进度
         }}
       />
-      {/* 定位按钮 */}
+      {/* 定位按钮（显示重试状态） */}
       <TouchableOpacity
         style={styles.locationButton}
         onPress={() => getUserLocation()}
         activeOpacity={0.8}
+        disabled={isRetrying}
       >
-        <Text style={styles.locationButtonText}>📍</Text>
+        <Text style={styles.locationButtonText}>
+          {isRetrying ? '🔄' : '📍'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -389,6 +499,47 @@ const styles = StyleSheet.create({
 export const AmapWebViewMethods = {
   getUserLocation: (ref: React.RefObject<any>) => {
     ref.current?.getUserLocation?.();
+  },
+  getNativeLocation: async (ref: React.RefObject<any>) => {
+    // 直接调用原生定位（不通过 WebView）
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        throw new Error('PERMISSION_DENIED');
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+        timeInterval: 10000,
+        distanceInterval: 10,
+      });
+
+      const { latitude, longitude, accuracy } = location.coords;
+
+      let address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+      try {
+        const reverseGeocode = await Location.reverseGeocodeAsync({
+          latitude,
+          longitude
+        });
+        if (reverseGeocode.length > 0) {
+          const addr = reverseGeocode[0];
+          address = [addr.region, addr.city, addr.district, addr.street]
+            .filter(Boolean).join('') || address;
+        }
+      } catch (geoError) {
+        console.warn('逆地理编码失败:', geoError);
+      }
+
+      return {
+        longitude,
+        latitude,
+        accuracy,
+        address
+      };
+    } catch (error: any) {
+      throw error;
+    }
   },
   clearPetMarkers: (ref: React.RefObject<any>) => {
     ref.current?.clearPetMarkers?.();
