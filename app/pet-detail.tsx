@@ -12,11 +12,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
 import { PetInfoDB, UserDB, type PetInfo, type User } from '@/lib/database';
-import { useLocation } from '@/hooks/use-location';
 
 export default function PetDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { location } = useLocation();
   const [petInfo, setPetInfo] = useState<PetInfo | null>(null);
   const [rescuer, setRescuer] = useState<User | null>(null);
 

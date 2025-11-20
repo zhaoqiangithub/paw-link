@@ -21,7 +21,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedView } from '@/components/themed-view';
 import { useApp } from '@/contexts/AppContext';
 import { useImagePicker } from '@/hooks/use-image-picker';
-import { useLocation } from '@/hooks/use-location';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { PetInfoDB } from '@/lib/database';
 import { AIModerationService } from '@/lib/services/ai-moderation';
@@ -85,7 +84,6 @@ const HEALTH_OPTIONS = [
 export default function PublishScreen() {
   const router = useRouter();
   const { user } = useApp();
-  const { location, getCurrentLocation } = useLocation();
   const { selectedLocation, selectLocation, clearLocation } = useLocationContext();
   const insets = useSafeAreaInsets();
   const {

@@ -86,29 +86,79 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
 
   // 定位系统
   const getCurrentLocation = useCallback(async () => {
-    console.log('🚀 getCurrentLocation called');
+    console.log('🚀 ===== 开始定位流程 =====');
+    console.log('📍 状态转换: IDLE → REQUESTING_PERMISSION');
     setLoading(true);
     setLocationMethod('none');
+
     let retryCount = 0;
     const maxRetries = 3;
 
+    // 错误分类和处理函数
+    const handleError = (error: any, retryable: boolean = false) => {
+      console.error('❌ 定位错误:', error.message || error);
+      setLoading(false);
+
+      let errorMessage = '';
+      let errorCode = 0;
+
+      switch (error.message) {
+        case 'PERMISSION_DENIED':
+          errorMessage = '定位权限被拒绝，请在设置中开启定位权限';
+          errorCode = 1;
+          setLocationMethod('none');
+          break;
+        case 'LOCATION_TIMEOUT':
+          errorMessage = '定位超时，请检查GPS设置或重试';
+          errorCode = 2;
+          setLocationMethod('none');
+          break;
+        case 'API_UNAVAILABLE':
+          errorMessage = '此设备GPS不可用，请使用真机或手动选择位置';
+          errorCode = 3;
+          setLocationMethod('none');
+          break;
+        case 'NETWORK_ERROR':
+          errorMessage = '网络错误，请检查网络连接后重试';
+          errorCode = 4;
+          setLocationMethod('none');
+          break;
+        default:
+          errorMessage = `获取位置失败: ${error.message || '未知错误'}，请重试`;
+          errorCode = 5;
+          setLocationMethod('none');
+      }
+
+      onLocationError?.({
+        message: errorMessage,
+        code: errorCode,
+      });
+
+      return retryable;
+    };
+
     while (retryCount < maxRetries) {
       try {
-        console.log(`🎯 尝试原生定位（第${retryCount + 1}次）...`);
-        setLocationMethod('native');
+        console.log(`🎯 第${retryCount + 1}/${maxRetries}次定位尝试`);
+        console.log('📍 状态转换: REQUESTING_PERMISSION → GETTING_LOCATION');
 
         // 1. 请求权限
+        setLocationMethod('requesting');
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
+          console.log('❌ 权限被拒绝');
           throw new Error('PERMISSION_DENIED');
         }
 
         // 2. 创建超时Promise
         const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('LOCATION_TIMEOUT')), 20000); // 20秒超时
+          console.log('⏰ 设置20秒超时限制');
+          setTimeout(() => reject(new Error('LOCATION_TIMEOUT')), 20000);
         });
 
         // 3. 创建定位Promise
+        setLocationMethod('native');
+        console.log('📱 请求GPS定位...');
         const locationPromise = Location.getCurrentPositionAsync({
           accuracy: Platform.OS === 'android'
             ? Location.Accuracy.High
@@ -118,11 +168,14 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
         });
 
         // 4. 竞态处理：定位 vs 超时
+        console.log('⏳ 等待定位结果或超时...');
         const locationResult = await Promise.race([locationPromise, timeoutPromise]);
 
         const { latitude, longitude, accuracy } = locationResult.coords;
-        console.log(`✅ 原生定位成功，精度: ${accuracy}m`);
+        console.log(`✅ GPS定位成功 [${latitude.toFixed(6)}, ${longitude.toFixed(6)}], 精度: ${accuracy}m`);
+        console.log('📍 状态转换: GETTING_LOCATION → GETTING_ADDRESS');
 
+        // 更新位置
         setUserLocation({ longitude, latitude });
         setRegion(prev => ({
           ...prev,
@@ -132,59 +185,56 @@ export const NativeMapView: React.FC<NativeMapViewProps> = ({
           latitudeDelta: 0.01,
         }));
 
-        // 3. 获取地址（使用高德API）
+        // 5. 获取地址（使用高德API）
         try {
+          console.log('🌐 正在获取地址信息...');
           const address = await getAddressFromAmap(latitude, longitude);
           const locationData = { longitude, latitude, address };
 
           setUserLocation(locationData);
-          onLocationSuccess?.(locationData);
           console.log('✅ 地址获取成功:', address);
-        } catch (geoError) {
-          console.warn('⚠️ 高德反向地理编码失败:', geoError);
-          onLocationSuccess?.({ longitude, latitude });
+        } catch (geoError: any) {
+          console.warn('⚠️ 高德反向地理编码失败:', geoError.message || geoError);
+          // 地址获取失败不影响定位结果
         }
 
-        console.log('✅ 定位完成，设置 loading = false');
+        // 成功
+        console.log('✅ ===== 定位流程完成 =====');
+        console.log('📍 状态转换: GETTING_ADDRESS → SUCCESS');
         setLoading(false);
         setLocationMethod('native');
+        onLocationSuccess?.({ longitude, latitude, address: userLocation?.address });
         return;
 
       } catch (error: any) {
         console.warn(`❌ 第${retryCount + 1}次定位失败:`, error.message);
-        retryCount++;
 
-        // 权限问题直接退出
+        // 判断是否为可重试错误
+        const isRetryableError = ['LOCATION_TIMEOUT', 'NETWORK_ERROR'].includes(error.message);
+        const shouldRetry = isRetryableError && retryCount < maxRetries - 1;
+
         if (error.message === 'PERMISSION_DENIED') {
-          console.log('❌ 权限被拒绝，设置 loading = false');
-          setLoading(false);
-          setLocationMethod('none');
-          onLocationError?.({
-            message: '定位权限被拒绝，请手动选择位置',
-            code: 1,
-          });
+          // 权限问题不重试
+          handleError(error, false);
           return;
         }
 
-        // 超时或网络错误，重试
-        if (retryCount < maxRetries) {
-          const delay = Math.min(1000 * retryCount, 3000); // 指数退避，最大3秒
-          console.log(`⏳ 等待 ${delay}ms 后重试...`);
+        if (shouldRetry) {
+          retryCount++;
+          const delay = 1000 * retryCount; // 指数退避
+          console.log(`⏳ ${delay}ms后重试... (${retryCount}/${maxRetries - 1})`);
           await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+          // 所有重试都失败
+          console.log('⚠️ 所有重试均失败，停止定位');
+          retryCount++;
+          handleError(error, false);
+          return;
         }
       }
     }
 
-    // 所有重试都失败
-    console.log('⚠️ 所有自动定位尝试都失败, 设置 loading = false');
-    setLoading(false);
-    setLocationMethod('none');
-    onLocationError?.({
-      message: '无法获取位置信息，请手动选择位置或检查网络设置',
-      code: 4,
-    });
-
-  }, [onLocationSuccess, onLocationError]);
+  }, [onLocationSuccess, onLocationError, userLocation?.address]);
 
   // 地图加载完成
   const handleMapReady = useCallback(() => {

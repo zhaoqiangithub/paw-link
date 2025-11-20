@@ -117,9 +117,29 @@ export default function SelectLocationScreen() {
 
   // 定位失败回调
   const handleLocationError = useCallback((error: { message: string }) => {
+    console.error('❌ 选择位置页面定位失败:', error.message);
     setIsLocating(false);
-    Alert.alert('定位失败', error.message);
-  }, []);
+
+    let errorTitle = '定位失败';
+    let errorMessage = error.message;
+
+    if (error.message.includes('权限')) {
+      errorTitle = '定位权限被拒绝';
+      errorMessage = '请在设置中开启定位权限';
+    } else if (error.message.includes('超时')) {
+      errorTitle = '定位超时';
+      errorMessage = '请检查网络连接和GPS设置';
+    }
+
+    Alert.alert(
+      errorTitle,
+      errorMessage,
+      [
+        { text: '重试', onPress: handleRelocate },
+        { text: '取消', style: 'cancel' },
+      ]
+    );
+  }, [handleRelocate]);
 
   // 重新定位
   const handleRelocate = useCallback(() => {
@@ -205,6 +225,7 @@ export default function SelectLocationScreen() {
       {/* 地图容器 */}
       <View style={styles.mapContainer}>
         <AmapWebView
+          ref={webViewRef}
           webViewRef={webViewRef}
           center={initialCenter}
           zoom={16}

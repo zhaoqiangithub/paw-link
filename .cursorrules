@@ -34,3 +34,6 @@
 - doc/deployment: 开发文档，与已开发
 - doc/testing: 测试用例
 - doc/user_guide: 用户使用指南
+
+## 其他
+- 如果我给你的是链接，请通过url -L 下载到项目的 tmp 路径下，再进行分析。并可以递归下载分析

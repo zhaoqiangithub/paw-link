@@ -15,7 +15,8 @@
       "Bash(wc:*)",
       "Bash(grep:*)",
       "Bash(head:*)",
-      "Bash(openspec:*)"
+      "Bash(openspec:*)",
+      "mcp__serena__write_memory"
     ],
     "deny": [],
     "ask": []

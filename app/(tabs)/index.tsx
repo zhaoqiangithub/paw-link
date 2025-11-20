@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 
-import { NativeMapView } from '@/components/NativeMapView';
+import { AmapWebView, AmapWebViewMethods } from '@/components/AmapWebView';
 import { ThemedView } from '@/components/themed-view';
 import { PetInfo, PetInfoDB } from '@/lib/database';
 import { Gradients, Colors, PetStatusBadges } from '@/constants/theme';
@@ -27,11 +27,13 @@ const DISTANCE_OPTIONS = [5, 10, 20];
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const webViewRef = useRef<AmapWebView>(null);
   const [statusFilter, setStatusFilter] = useState<string>('for_adoption');
   const [distance, setDistance] = useState<number>(5);
   const [petInfos, setPetInfos] = useState<PetInfo[]>([]);
   const [mapLocation, setMapLocation] = useState<{ latitude: number; longitude: number; address?: string } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   // 处理地图位置变化
   const handleMapLocationChange = (loc: { latitude: number; longitude: number; address?: string }) => {
@@ -41,14 +43,28 @@ export default function HomeScreen() {
 
   // 处理地图定位成功
   const handleMapLocationSuccess = (loc: { latitude: number; longitude: number; address?: string }) => {
-    console.log('Map location success:', loc);
+    console.log('✅ 定位成功:', loc);
     setMapLocation(loc);
+    setIsLocating(false);
+    setLocationError(null);
   };
 
   // 处理地图定位失败
   const handleMapLocationError = (error: { message: string; code?: number }) => {
-    console.error('Map location error:', error.message);
+    console.error('❌ 定位失败:', error.message);
+    setIsLocating(false);
     setLocationError(error.message);
+  };
+
+  // 定位按钮点击处理
+  const handleLocationButton = () => {
+    console.log('🎯 触发手动定位');
+    setIsLocating(true);
+    setLocationError(null);
+
+    if (webViewRef.current) {
+      AmapWebViewMethods.getUserLocation(webViewRef);
+    }
   };
 
   // 重试定位
@@ -87,16 +103,27 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       {/* 地图托底 - 全屏显示 */}
       <View style={styles.mapContainer}>
-        <NativeMapView
+        <AmapWebView
+          ref={webViewRef}
+          webViewRef={webViewRef}
+          center={mapLocation ? { longitude: mapLocation.longitude, latitude: mapLocation.latitude } : undefined}
           onMarkerClick={(petInfo) =>
             router.push({ pathname: '/pet-detail', params: { id: petInfo.id } })
           }
           onLocationSuccess={handleMapLocationSuccess}
           onLocationError={handleMapLocationError}
-          onMapLoaded={() => console.log('Map loaded')}
+          onMapLoaded={() => console.log('AmapWebView loaded')}
           pets={petInfos}
-          key={`map-${mapLocation ? 'ready' : 'loading'}`}  {/* 强制重新渲染以便重试 */}
+          style={styles.map}
         />
+
+        {/* 定位按钮 */}
+        <TouchableOpacity
+          style={styles.mapLocationButton}
+          onPress={handleLocationButton}
+        >
+          <Ionicons name={isLocating ? "locate-outline" : "locate"} size={24} color="#fff" />
+        </TouchableOpacity>
       </View>
       <View style={styles.overlayContainer}>
         <LinearGradient colors={['transparent', 'rgba(0,0,0,0.5)']} style={styles.gradient}>
@@ -166,23 +193,44 @@ export default function HomeScreen() {
 
       {/* 定位信息 */}
       <View style={styles.mapLocationChip}>
-        <Ionicons name="location" size={16} color="#2C6CFF" />
+        <Ionicons name="location" size={16} color={
+          isLocating ? "#2196F3" :
+          mapLocation?.address ? "#4CAF50" :
+          locationError ? "#F44336" : "#2C6CFF"
+        } />
         <Text style={styles.mapLocationText}>
-          我在 {mapLocation?.address || locationError ? '定位失败' : '正在定位'}
+          {isLocating
+            ? '📍 正在定位...'
+            : mapLocation?.address
+              ? `✅ ${mapLocation.address}`
+              : locationError
+                ? `⚠️ ${locationError}`
+                : '点击定位按钮获取位置'}
         </Text>
       </View>
 
       {/* 错误提示 */}
       {locationError && (
         <View style={styles.errorBanner}>
-          <Ionicons name="warning-outline" size={16} color="#FF6B6B" />
-          <Text style={styles.errorText}>{locationError}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={handleRetryLocation}
-          >
-            <Text style={styles.retryButtonText}>重试</Text>
-          </TouchableOpacity>
+          <Ionicons name="warning-outline" size={18} color="#FF6B6B" />
+          <View style={styles.errorTextContainer}>
+            <Text style={styles.errorText}>{locationError}</Text>
+            <Text style={styles.errorHint}>点击下方按钮重试或手动选择位置</Text>
+          </View>
+          <View style={styles.errorActions}>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={handleRetryLocation}
+            >
+              <Text style={styles.retryButtonText}>🔄 重试</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.manualButton}
+              onPress={() => router.push('/select-location')}
+            >
+              <Text style={styles.manualButtonText}>📌 手动选择</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </ThemedView>
@@ -420,6 +468,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
+  mapLocationButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 100,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#2196F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    zIndex: 10,
+  },
   petCarouselContainer: {
     position: 'absolute',
     top: 250,
@@ -486,27 +551,68 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEE2E2',
-    padding: 12,
-    borderRadius: 12,
-    gap: 8,
+    position: 'absolute',
+    top: 120,
+    left: 16,
+    right: 16,
+    backgroundColor: '#FFF3F3',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FFDDDD',
+    padding: 16,
+    zIndex: 100,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  errorTextContainer: {
+    flex: 1,
+    marginLeft: 8,
   },
   errorText: {
     color: '#DC2626',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  errorHint: {
+    color: '#DC2626',
     fontSize: 12,
-    flex: 1,
+    opacity: 0.8,
+  },
+  errorActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
   },
   retryButton: {
     backgroundColor: '#DC2626',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+    flex: 1,
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
+    textAlign: 'center',
+  },
+  manualButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#DC2626',
+    flex: 1,
+  },
+  manualButtonText: {
+    color: '#DC2626',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
